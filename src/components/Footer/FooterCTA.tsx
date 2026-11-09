@@ -79,14 +79,9 @@ export default function FooterCTA() {
                 <span className="ft-ring absolute left-1/2 top-[32%] h-[min(70vw,720px)] w-[min(70vw,720px)] rounded-full border border-violet-300/25" />
                 <span className="ft-ring absolute left-1/2 top-[32%] h-[min(70vw,720px)] w-[min(70vw,720px)] rounded-full border border-violet-300/20" style={{ animationDelay: "-3s" }} />
                 {/* rolling grid floor */}
-                <div className="ft-grid-wrap absolute inset-x-0 bottom-0 h-[45%] overflow-hidden [mask-image:linear-gradient(to_bottom,transparent,black_45%)]">
-                    <div className="ft-grid" />
-                </div>
-                {/* fade in from the section above */}
                 <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-black to-transparent" />
             </div>
 
-            {/* ── CTA ── */}
             <div className="mx-auto max-w-4xl px-6 pb-16 pt-[clamp(6rem,10vw,9rem)] text-center">
                 <motion.h2 {...rise(0)} className="font-heading text-[clamp(2rem,4.2vw,4.2rem)] font-normal uppercase leading-[1.1] tracking-[0.04em]">
                     <SmallCaps text="Lorem Ipsum Is Simply Dummy Text Of The Printing" />
@@ -111,7 +106,6 @@ export default function FooterCTA() {
                 </motion.div>
             </div>
 
-            {/* ── footer ── */}
             <div className="mx-auto mt-8 flex max-w-6xl flex-col items-center justify-between gap-6 px-6 md:flex-row">
                 <a href="#home" className="font-heading text-[clamp(1.8rem,3vw,2.8rem)] uppercase leading-none tracking-[0.04em]">
                     <SmallCaps text="Hans Paladini" />
@@ -129,7 +123,6 @@ export default function FooterCTA() {
                 </nav>
             </div>
 
-            {/* the pink neon horizon: waves from both sides that collide in the middle */}
             <div className="relative mt-2 h-[160px]">
                 <NeonWaves />
             </div>
