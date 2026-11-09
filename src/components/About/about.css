@@ -1,0 +1,109 @@
+@font-face {
+    font-family: "HoustonPen";
+    src: url("/fonts/HOUSTONPEN-REGULAR.ttf") format("truetype");
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+.about-script {
+    font-family: "HoustonPen", "Brush Script MT", cursive;
+}
+
+@keyframes about-fire {
+    0% {
+        opacity: 0;
+        transform: translate3d(0, 0, 0) scale(1);
+    }
+
+    10% {
+        opacity: 1;
+    }
+
+    30% {
+        transform: translate3d(calc(var(--dx) * 0.4), -18vh, 0) scale(0.85);
+    }
+
+    55% {
+        transform: translate3d(calc(var(--dx) * -0.3), -34vh, 0) scale(0.65);
+        opacity: 0.85;
+    }
+
+    80% {
+        transform: translate3d(calc(var(--dx) * 0.6), -48vh, 0) scale(0.4);
+        opacity: 0.45;
+    }
+
+    100% {
+        opacity: 0;
+        transform: translate3d(var(--dx), -60vh, 0) scale(0.15);
+    }
+}
+
+@keyframes about-flicker {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    40% {
+        opacity: 0.55;
+    }
+
+    60% {
+        opacity: 0.9;
+    }
+
+    80% {
+        opacity: 0.65;
+    }
+}
+
+.about-fire {
+    position: absolute;
+    bottom: -12px;
+    border-radius: 9999px;
+    background: radial-gradient(circle, #fff6d0 0%, #ffcf5a 14%, #ff8a1f 30%, rgba(255, 70, 0, 0.45) 48%, rgba(200, 30, 0, 0.15) 62%, transparent 72%);
+    opacity: 0;
+    will-change: transform, opacity;
+    animation: about-fire var(--d, 6s) cubic-bezier(0.3, 0, 0.7, 1) var(--delay, 0s) infinite;
+}
+
+.about-fire>i {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: inherit;
+    animation: about-flicker 0.6s steps(3, end) infinite;
+}
+
+.about.is-paused .about-fire,
+.about.is-paused .about-fire>i {
+    animation-play-state: paused;
+}
+
+.about-btn-shine {
+    transform: translateX(-120%) skewX(-20deg);
+    transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.about-btn:hover .about-btn-shine {
+    transform: translateX(260%) skewX(-20deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+    .about *,
+    .about *::before,
+    .about *::after {
+        animation: none !important;
+    }
+}
+
+.about img {
+    pointer-events: none;
+    user-select: none;
+    -webkit-user-drag: none;
+    -webkit-touch-callout: none;
+}

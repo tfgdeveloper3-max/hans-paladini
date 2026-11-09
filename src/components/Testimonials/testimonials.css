@@ -1,0 +1,56 @@
+/* ───────────────────────── Testimonials marquee ───────────────────────── */
+@keyframes tm-left {
+    from {
+        transform: translate3d(0, 0, 0);
+    }
+
+    to {
+        transform: translate3d(-50%, 0, 0);
+    }
+}
+
+@keyframes tm-right {
+    from {
+        transform: translate3d(-50%, 0, 0);
+    }
+
+    to {
+        transform: translate3d(0, 0, 0);
+    }
+}
+
+.tm-track {
+    will-change: transform;
+}
+
+.tm-track.to-left {
+    animation: tm-left var(--dur, 45s) linear infinite;
+}
+
+.tm-track.to-right {
+    animation: tm-right var(--dur, 45s) linear infinite;
+}
+
+/* hover a row to read it comfortably */
+.tm-row:hover .tm-track {
+    animation-play-state: paused;
+}
+
+.tm-paused .tm-track {
+    animation-play-state: paused;
+}
+
+.tm-card {
+    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.4s;
+}
+
+.tm-card:hover {
+    transform: translateY(-6px);
+    border-color: rgba(255, 255, 255, 0.35);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .tm-track {
+        animation: none !important;
+    }
+}

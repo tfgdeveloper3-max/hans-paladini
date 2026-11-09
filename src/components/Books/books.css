@@ -1,0 +1,160 @@
+@font-face {
+    font-family: "HoustonPen";
+    src: url("/fonts/HOUSTONPEN-REGULAR.ttf") format("truetype");
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+.font-houston {
+    font-family: "HoustonPen", cursive !important;
+}
+
+.bk-p {
+    position: absolute;
+    border-radius: 9999px;
+    will-change: transform;
+    animation: var(--anim) var(--d) linear var(--delay) infinite;
+}
+
+.bk-p>i {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: var(--bg);
+    animation: bk-pulse var(--pd, 2.4s) ease-in-out var(--delay) infinite;
+}
+
+.bk-p.no-pulse>i {
+    animation: none;
+}
+
+@keyframes bk-rise {
+    0% {
+        opacity: 0;
+        transform: translate3d(0, 0, 0) scale(1);
+    }
+
+    10% {
+        opacity: 1;
+    }
+
+    50% {
+        transform: translate3d(var(--dx), -42vh, 0) scale(0.8);
+    }
+
+    85% {
+        opacity: 0.7;
+    }
+
+    100% {
+        opacity: 0;
+        transform: translate3d(calc(var(--dx) * -1), -88vh, 0) scale(0.35);
+    }
+}
+
+@keyframes bk-drift {
+    0% {
+        opacity: 0;
+        transform: translate3d(0, 0, 0);
+    }
+
+    12% {
+        opacity: 1;
+    }
+
+    85% {
+        opacity: 0.8;
+    }
+
+    100% {
+        opacity: 0;
+        transform: translate3d(70vw, var(--dy), 0);
+    }
+}
+
+@keyframes bk-wander {
+
+    0%,
+    100% {
+        transform: translate3d(0, 0, 0);
+    }
+
+    25% {
+        transform: translate3d(var(--dx), var(--dy), 0);
+    }
+
+    50% {
+        transform: translate3d(calc(var(--dx) * -0.7), calc(var(--dy) * 1.3), 0);
+    }
+
+    75% {
+        transform: translate3d(calc(var(--dx) * 0.8), calc(var(--dy) * -0.6), 0);
+    }
+}
+
+@keyframes bk-float {
+    0% {
+        opacity: 0;
+        transform: translate3d(0, 0, 0);
+    }
+
+    15% {
+        opacity: 1;
+    }
+
+    85% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
+        transform: translate3d(var(--dx), -30vh, 0);
+    }
+}
+
+@keyframes bk-pulse {
+
+    0%,
+    100% {
+        opacity: 0.2;
+    }
+
+    50% {
+        opacity: 1;
+    }
+}
+
+.bk-paused .bk-p,
+.bk-paused .bk-p>i {
+    animation-play-state: paused;
+}
+
+.bk-btn-shine {
+    transform: translateX(-130%) skewX(-20deg);
+    transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.bk-btn:hover .bk-btn-shine {
+    transform: translateX(330%) skewX(-20deg);
+}
+
+.bk-number {
+    color: transparent;
+    -webkit-text-stroke: 1px rgba(255, 255, 255, 0.09);
+}
+
+.bk-section img {
+    pointer-events: none;
+    user-select: none;
+    -webkit-user-drag: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+    .bk-section *,
+    .bk-section *::before,
+    .bk-section *::after {
+        animation: none !important;
+    }
+}

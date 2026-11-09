@@ -1,0 +1,61 @@
+/* ───────────────────────── Video trailer ───────────────────────── */
+@keyframes tr-streaks {
+    from {
+        transform: translateX(0);
+    }
+
+    to {
+        transform: translateX(-50%);
+    }
+}
+
+.tr-streaks {
+    animation: tr-streaks 18s linear infinite;
+    will-change: transform;
+}
+
+@keyframes tr-ping {
+    0% {
+        transform: scale(1);
+        opacity: 0.7;
+    }
+
+    100% {
+        transform: scale(1.9);
+        opacity: 0;
+    }
+}
+
+.tr-ping {
+    animation: tr-ping 1.8s cubic-bezier(0.2, 0.6, 0.3, 1) infinite;
+}
+
+.tr-poster {
+    transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.tr-frame:hover .tr-poster {
+    transform: scale(1.04);
+}
+
+.tr-metal {
+    background: linear-gradient(180deg, #ffffff 0%, #c9ccd6 38%, #5c6070 52%, #e8eaf0 64%, #9aa0ae 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.tr-paused .tr-streaks,
+.tr-paused .tr-ping {
+    animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+    .trailer *,
+    .trailer *::before,
+    .trailer *::after {
+        animation: none !important;
+        transition: none !important;
+    }
+}

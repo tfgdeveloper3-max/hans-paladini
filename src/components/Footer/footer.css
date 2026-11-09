@@ -1,0 +1,105 @@
+/* ───────────────────────── CTA + Footer ───────────────────────── */
+
+/* retro grid floor rolling towards you (transform only) */
+.ft-grid-wrap {
+    perspective: 420px;
+    perspective-origin: 50% 0%;
+}
+
+.ft-grid {
+    position: absolute;
+    left: -50%;
+    right: -50%;
+    top: 0;
+    height: 200%;
+    transform-origin: 50% 0%;
+    transform: rotateX(72deg);
+    background-image:
+        linear-gradient(rgba(255, 70, 200, 0.3) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(160, 90, 255, 0.28) 1px, transparent 1px);
+    background-size: 60px 60px;
+    will-change: transform;
+    animation: ft-grid 3s linear infinite;
+}
+
+@keyframes ft-grid {
+    from {
+        transform: rotateX(72deg) translate3d(0, 0, 0);
+    }
+
+    to {
+        transform: rotateX(72deg) translate3d(0, 60px, 0);
+    }
+}
+
+/* twinkling stars */
+@keyframes ft-twinkle {
+
+    0%,
+    100% {
+        opacity: 0.15;
+    }
+
+    50% {
+        opacity: 1;
+    }
+}
+
+.ft-star {
+    animation: ft-twinkle var(--d, 3s) ease-in-out var(--delay, 0s) infinite;
+}
+
+/* slow pulse rings behind the CTA */
+@keyframes ft-ring {
+    0% {
+        transform: translate(-50%, -50%) scale(0.6);
+        opacity: 0.5;
+    }
+
+    100% {
+        transform: translate(-50%, -50%) scale(1.5);
+        opacity: 0;
+    }
+}
+
+.ft-ring {
+    animation: ft-ring 6s cubic-bezier(0.2, 0.6, 0.3, 1) infinite;
+    will-change: transform, opacity;
+}
+
+.ft-paused .ft-grid,
+.ft-paused .ft-star,
+.ft-paused .ft-ring {
+    animation-play-state: paused;
+}
+
+.ft-link {
+    position: relative;
+}
+
+.ft-link::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -4px;
+    height: 1px;
+    background: #ff4fd8;
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.ft-link:hover::after {
+    transform: scaleX(1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+    .ft *,
+    .ft *::before,
+    .ft *::after {
+        animation: none !important;
+        transition: none !important;
+    }
+}

@@ -1,0 +1,71 @@
+@keyframes pf-blink {
+
+    0%,
+    49% {
+        opacity: 1;
+    }
+
+    50%,
+    100% {
+        opacity: 0;
+    }
+}
+
+.pf-caret {
+    animation: pf-blink 0.8s steps(1) infinite;
+}
+
+.pf-card {
+    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.4s, box-shadow 0.5s;
+}
+
+.pf-card:hover {
+    transform: translateY(-8px);
+    border-color: rgba(255, 255, 255, 0.35);
+    box-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.8), 0 0 40px -10px rgba(190, 120, 255, 0.45);
+}
+
+.pf-cover img {
+    transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.pf-card:hover .pf-cover img {
+    transform: scale(1.05);
+}
+
+.pf-shine {
+    transform: translateX(-130%) skewX(-18deg);
+    transition: transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.pf-card:hover .pf-shine {
+    transform: translateX(330%) skewX(-18deg);
+}
+
+.pf-link {
+    background-size: 100% 1px;
+    background-position: 0 100%;
+    background-repeat: no-repeat;
+    transition: background-size 0.4s, color 0.3s;
+}
+
+.pf-link:hover {
+    background-size: 0% 1px;
+    color: #ffb07a;
+}
+
+.portfolio img {
+    pointer-events: none;
+    user-select: none;
+    -webkit-user-drag: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+    .portfolio *,
+    .portfolio *::before,
+    .portfolio *::after {
+        animation: none !important;
+        transition: none !important;
+    }
+}
