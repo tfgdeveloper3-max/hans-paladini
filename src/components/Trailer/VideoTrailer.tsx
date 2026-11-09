@@ -2,10 +2,6 @@ import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, useInView } from "framer-motion";
 import "./trailer.css";
 
-/**
- * Put your trailer here — either a YouTube link (embed form) or a video file in /public.
- * Example YouTube: "https://www.youtube.com/embed/VIDEO_ID"
- */
 const VIDEO = {
     youtube: "",
     file: "/videos/trailer.mp4",
@@ -20,7 +16,6 @@ export default function VideoTrailer() {
     const onScreen = useInView(ref, { amount: 0 });
     const [open, setOpen] = useState(false);
 
-    // close with Escape
     useEffect(() => {
         if (!open) return;
         const onKey = (e: KeyboardEvent) => {
@@ -43,14 +38,12 @@ export default function VideoTrailer() {
             aria-labelledby="trailer-title"
             className={`trailer relative isolate overflow-hidden bg-black py-[clamp(4rem,7vw,7rem)] ${onScreen ? "" : "tr-paused"}`}
         >
-            {/* soft purple haze */}
             <div aria-hidden className="pointer-events-none absolute left-1/2 top-1/2 -z-10 h-[80%] w-[70%] -translate-x-1/2 -translate-y-1/2 bg-[radial-gradient(closest-side,rgba(110,60,200,0.22),transparent)]" />
 
             <motion.h2 id="trailer-title" {...rise(0)} className="font-heading text-center text-[clamp(2.2rem,4.6vw,4.6rem)] font-normal uppercase leading-none tracking-[0.04em] text-white">
                 <SmallCaps text="Video Trailer" />
             </motion.h2>
 
-            {/* poster / player frame */}
             <motion.div {...rise(0.15)} className="mx-auto mt-10 w-[min(92vw,820px)]">
                 <button
                     type="button"
@@ -60,7 +53,6 @@ export default function VideoTrailer() {
                 >
                     <span className="relative block h-full w-full overflow-hidden rounded-[10px]">
                         <span className="tr-poster absolute inset-0 block">
-                            {/* moving red streaks (pure gradients, no image needed) */}
                             <span className="absolute inset-0 bg-[#3a0610]" />
                             <span
                                 className="tr-streaks absolute inset-y-0 left-0 w-[200%]"
@@ -75,7 +67,6 @@ export default function VideoTrailer() {
                             </span>
                         </span>
 
-                        {/* play button */}
                         <span className="absolute left-1/2 top-1/2 grid h-[clamp(52px,7vw,72px)] w-[clamp(52px,7vw,72px)] -translate-x-1/2 -translate-y-1/2 place-items-center">
                             <span className="tr-ping absolute inset-0 rounded-full bg-white/40" />
                             <span className="relative grid h-full w-full place-items-center rounded-full bg-white shadow-[0_0_30px_rgba(255,255,255,0.5)] transition-transform duration-300 group-hover:scale-110">
@@ -88,7 +79,6 @@ export default function VideoTrailer() {
                 </button>
             </motion.div>
 
-            {/* platforms */}
             <motion.ul {...rise(0.3)} className="font-body mt-8 flex flex-wrap items-center justify-center gap-x-10 gap-y-3 text-sm text-white/55">
                 {PLATFORMS.map((p) => (
                     <li key={p} className="flex items-center gap-2 transition-colors duration-300 hover:text-white">
@@ -100,7 +90,6 @@ export default function VideoTrailer() {
                 ))}
             </motion.ul>
 
-            {/* video modal */}
             <AnimatePresence>
                 {open && (
                     <motion.div

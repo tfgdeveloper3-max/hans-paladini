@@ -1,6 +1,3 @@
-/* ───────────────────────── CTA + Footer ───────────────────────── */
-
-/* retro grid floor rolling towards you (transform only) */
 .ft-grid-wrap {
     perspective: 420px;
     perspective-origin: 50% 0%;
@@ -32,7 +29,6 @@
     }
 }
 
-/* twinkling stars */
 @keyframes ft-twinkle {
 
     0%,
@@ -49,7 +45,6 @@
     animation: ft-twinkle var(--d, 3s) ease-in-out var(--delay, 0s) infinite;
 }
 
-/* slow pulse rings behind the CTA */
 @keyframes ft-ring {
     0% {
         transform: translate(-50%, -50%) scale(0.6);

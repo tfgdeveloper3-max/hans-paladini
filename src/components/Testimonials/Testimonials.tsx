@@ -52,12 +52,10 @@ export default function Testimonials() {
                 animate={seen ? "on" : "off"}
                 variants={{ off: { opacity: 0 }, on: { opacity: 1, transition: { delay: 0.25, duration: 1 } } }}
             >
-                {/* row 1 → moves right, row 2 → moves left */}
                 <Row quotes={ROW_1} direction="right" duration={50} />
                 <Row quotes={ROW_2} direction="left" duration={46} />
             </motion.div>
 
-            {/* fade the edges into black (plain gradients = cheap) */}
             <div aria-hidden className="pointer-events-none absolute inset-y-0 left-0 w-[12vw] bg-gradient-to-r from-black to-transparent" />
             <div aria-hidden className="pointer-events-none absolute inset-y-0 right-0 w-[12vw] bg-gradient-to-l from-black to-transparent" />
         </section>
@@ -65,7 +63,6 @@ export default function Testimonials() {
 }
 
 function Row({ quotes, direction, duration }: { quotes: Quote[]; direction: "left" | "right"; duration: number }) {
-    // the list is rendered twice so the loop is seamless (track moves exactly half its width)
     const items = [...quotes, ...quotes];
     return (
         <div className="tm-row overflow-hidden py-2">

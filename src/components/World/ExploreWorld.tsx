@@ -107,7 +107,6 @@ export default function ExploreWorld() {
 
             <div aria-hidden className="pointer-events-none absolute inset-0 z-10">
 
-                {/* Center glowing dot */}
                 <motion.span
                     className="absolute left-1/2 top-[44%] h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white shadow-[0_0_10px_3px_rgba(255,255,255,0.7)]"
                     style={{
@@ -116,7 +115,6 @@ export default function ExploreWorld() {
                     }}
                 />
 
-                {/* Vertical center line */}
                 <motion.span
                     className="absolute left-1/2 top-[44%] h-[16.7%] w-[1.5px] -translate-x-1/2 origin-top bg-white/90 shadow-[0_0_6px_rgba(255,255,255,0.6)]"
                     style={{
@@ -125,7 +123,6 @@ export default function ExploreWorld() {
                     }}
                 />
 
-                {/* Left horizontal line */}
                 <motion.span
                     className="absolute left-[26%] right-1/2 top-[60.7%] h-[1.5px] origin-right bg-gradient-to-l from-white to-white/80 shadow-[0_0_6px_rgba(255,255,255,0.6)]"
                     style={{
@@ -134,7 +131,6 @@ export default function ExploreWorld() {
                     }}
                 />
 
-                {/* Right horizontal line */}
                 <motion.span
                     className="absolute left-1/2 right-[26%] top-[60.7%] h-[1.5px] origin-left bg-gradient-to-r from-white to-white/80 shadow-[0_0_6px_rgba(255,255,255,0.6)]"
                     style={{
@@ -143,7 +139,6 @@ export default function ExploreWorld() {
                     }}
                 />
 
-                {/* Arrows */}
                 <Arrow side="left" opacity={arrowOpacity} />
                 <Arrow side="right" opacity={arrowOpacity} />
 

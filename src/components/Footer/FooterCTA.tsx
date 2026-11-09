@@ -11,7 +11,6 @@ const NAV = [
     { label: "Contact Me", href: "#contact" },
 ];
 
-// replace "#" with your profile links
 const SOCIAL = [
     { label: "X", href: "#", icon: <span className="text-[13px] font-bold leading-none">X</span> },
     {
@@ -63,11 +62,8 @@ export default function FooterCTA() {
 
     return (
         <footer ref={ref} id="contact" className={`ft relative isolate overflow-hidden bg-[#07031a] text-white ${onScreen ? "" : "ft-paused"}`}>
-            {/* ── background ── */}
             <div aria-hidden className="absolute inset-0 -z-10">
-                {/* violet sky glow */}
                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_90%_60%_at_50%_100%,rgba(150,40,200,0.55),rgba(50,15,110,0.35)_45%,transparent_75%)]" />
-                {/* stars */}
                 {stars.map((s, i) => (
                     <span
                         key={i}
@@ -75,10 +71,8 @@ export default function FooterCTA() {
                         style={{ left: s.left, top: s.top, width: s.size, height: s.size, "--d": s.d, "--delay": s.delay } as CSSProperties}
                     />
                 ))}
-                {/* pulse rings behind the CTA */}
                 <span className="ft-ring absolute left-1/2 top-[32%] h-[min(70vw,720px)] w-[min(70vw,720px)] rounded-full border border-violet-300/25" />
                 <span className="ft-ring absolute left-1/2 top-[32%] h-[min(70vw,720px)] w-[min(70vw,720px)] rounded-full border border-violet-300/20" style={{ animationDelay: "-3s" }} />
-                {/* rolling grid floor */}
                 <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-black to-transparent" />
             </div>
 

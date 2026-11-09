@@ -1,13 +1,7 @@
 import { useEffect, useRef } from "react";
 
-/**
- * The pink horizon line.
- * A wave packet travels in from the LEFT and one from the RIGHT, they collide in the
- * middle → white-hot flash, a shockwave runs back out along the line and sparks fly.
- * Drawn on a small canvas (one draw per frame, paused when off-screen) → very light.
- */
-const CYCLE = 4.6; // seconds per loop
-const MEET = 0.55; // part of the loop when the waves meet
+const CYCLE = 4.6; 
+const MEET = 0.55; 
 const SPARKS = 70;
 
 export default function NeonWaves({ className = "" }: { className?: string }) {
@@ -27,7 +21,6 @@ export default function NeonWaves({ className = "" }: { className?: string }) {
         let visible = true;
         const start = performance.now();
 
-        // sparks: fixed random directions, reused every collision
         const sparks = Array.from({ length: SPARKS }, () => {
             const a = Math.random() * Math.PI * 2;
             const s = 80 + Math.random() * 320;
@@ -53,7 +46,6 @@ export default function NeonWaves({ className = "" }: { className?: string }) {
         });
         io.observe(canvas);
 
-        // stroke a path several times (wide + faint → thin + bright) = neon glow without shadowBlur
         const neon = (path: () => void, color: string, boost: number) => {
             const passes: Array<[number, number]> = [
                 [10, 0.06],
@@ -81,11 +73,9 @@ export default function NeonWaves({ className = "" }: { className?: string }) {
             ctx.clearRect(0, 0, w, h);
             ctx.globalCompositeOperation = "lighter";
 
-            // collision timing
-            const after = p - MEET; // > 0 once they have met
+            const after = p - MEET; 
             const flash = after >= 0 ? Math.exp(-after / 0.1) : 0;
 
-            // ── base line (brighter right after the collision) ──
             neon(
                 () => {
                     ctx.moveTo(0, cy);
@@ -95,14 +85,13 @@ export default function NeonWaves({ className = "" }: { className?: string }) {
                 0.75 + flash * 1.2,
             );
 
-            // ── two wave packets travelling towards the centre ──
             if (after < 0) {
-                const s = p / MEET; // 0 → 1
+                const s = p / MEET;
                 const ease = s * s * (3 - 2 * s);
-                const xl = ease * cx; // left packet centre
-                const xr = w - ease * cx; // right packet centre
+                const xl = ease * cx;
+                const xr = w - ease * cx;
                 const sigma = w * 0.09;
-                const amp = h * 0.17 * (0.55 + 0.45 * ease); // grows as they approach (2 packets add up → stays inside)
+                const amp = h * 0.17 * (0.55 + 0.45 * ease); 
                 const k = (Math.PI * 2) / Math.max(60, w * 0.035);
                 neon(
                     () => {
@@ -119,11 +108,9 @@ export default function NeonWaves({ className = "" }: { className?: string }) {
                 );
             }
 
-            // ── collision: flash, shockwave, sparks ──
             if (after >= 0) {
-                const life = after * CYCLE; // seconds since impact
+                const life = after * CYCLE; 
 
-                // white-hot core
                 const r = 30 + life * 260;
                 const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
                 g.addColorStop(0, `rgba(255,255,255,${0.9 * flash})`);
@@ -132,7 +119,6 @@ export default function NeonWaves({ className = "" }: { className?: string }) {
                 ctx.fillStyle = g;
                 ctx.fillRect(cx - r, cy - r, r * 2, r * 2);
 
-                // expanding ring (squashed → sits on the horizon)
                 const ring = Math.max(0, 1 - life / 0.9);
                 if (ring > 0) {
                     ctx.beginPath();
@@ -142,7 +128,6 @@ export default function NeonWaves({ className = "" }: { className?: string }) {
                     ctx.stroke();
                 }
 
-                // shockwave running back out along the line
                 const reach = Math.min(1, life / 1.1) * cx;
                 const fade = Math.max(0, 1 - life / 1.4);
                 for (const dir of [-1, 1]) {
@@ -158,7 +143,6 @@ export default function NeonWaves({ className = "" }: { className?: string }) {
                     ctx.stroke();
                 }
 
-                // sparks with a little gravity
                 const sparkFade = Math.max(0, 1 - life / 1.5);
                 if (sparkFade > 0) {
                     for (const sp of sparks) {

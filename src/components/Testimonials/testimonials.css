@@ -1,4 +1,3 @@
-/* ───────────────────────── Testimonials marquee ───────────────────────── */
 @keyframes tm-left {
     from {
         transform: translate3d(0, 0, 0);
@@ -31,7 +30,6 @@
     animation: tm-right var(--dur, 45s) linear infinite;
 }
 
-/* hover a row to read it comfortably */
 .tm-row:hover .tm-track {
     animation-play-state: paused;
 }

@@ -42,21 +42,17 @@ const SUBTITLE = "Lorem Ipsum is simply dummy text of the printing and typesetti
 const TYPE_SPEED = 60;
 const EASE_OUT = [0.16, 1, 0.3, 1] as const;
 
-/** The cover PNGs have a transparent margin around the book — these numbers show only the cover itself. */
 const COVER_CROP = { width: "108.42%", height: "110.37%", left: "-4.95%", top: "-4.8%", maxWidth: "none" } as const;
-
-/* ═════════════════════════════ Section ═════════════════════════════ */
 
 export default function ExploreBooks() {
     const ref = useRef<HTMLElement>(null);
     const reduce = useReducedMotion() ?? false;
     const start = useInView(ref, { once: true, amount: 0.3 });
 
-    const [tab, setTab] = useState<Series>("daywalker"); // Daywalker selected by default
+    const [tab, setTab] = useState<Series>("daywalker"); 
     const [typed, setTyped] = useState(0);
-    const [done, setDone] = useState(false); // title finished → reveal the rest
+    const [done, setDone] = useState(false); 
 
-    // typing animation (same as "Explore The World")
     useEffect(() => {
         if (!start) return;
         if (reduce) {
@@ -76,7 +72,6 @@ export default function ExploreBooks() {
         return () => window.clearInterval(id);
     }, [start, reduce]);
 
-    // gentle background parallax
     const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
     const bgY = useTransform(scrollYProgress, [0, 1], ["-6%", "6%"]);
 
@@ -84,7 +79,6 @@ export default function ExploreBooks() {
 
     return (
         <section ref={ref} id="books" aria-labelledby="pf-title" className="portfolio relative isolate overflow-hidden bg-[#140b2e] py-[clamp(4rem,7vw,7rem)]">
-            {/* background */}
             <motion.div aria-hidden className="absolute -inset-y-[8%] inset-x-0 -z-10" style={{ y: reduce ? 0 : bgY }}>
                 <img src={portfolioBg} alt="" decoding="async" loading="lazy" className="h-full w-full object-cover" />
             </motion.div>
@@ -92,7 +86,6 @@ export default function ExploreBooks() {
             <div aria-hidden className="absolute inset-x-0 bottom-0 -z-10 h-32 bg-gradient-to-t from-black/80 to-transparent" />
 
             <div className="mx-auto max-w-[1240px] px-6">
-                {/* ── title (typing) ── */}
                 <h2
                     id="pf-title"
                     aria-label={TITLE}
@@ -111,7 +104,6 @@ export default function ExploreBooks() {
                     {SUBTITLE}
                 </motion.p>
 
-                {/* ── tabs ── */}
                 <motion.div
                     role="tablist"
                     aria-label="Book series"
@@ -145,7 +137,6 @@ export default function ExploreBooks() {
                     })}
                 </motion.div>
 
-                {/* ── cards ── */}
                 <div id="pf-panel" role="tabpanel" className="mt-8 min-h-[34rem]">
                     <AnimatePresence mode="wait">
                         <motion.ul
@@ -177,8 +168,6 @@ export default function ExploreBooks() {
     );
 }
 
-/* ═════════════════════════════ Card ═════════════════════════════ */
-
 function BookCard({ book }: { book: Book }) {
     return (
         <article className="pf-card flex h-full flex-col rounded-2xl border border-white/15 bg-[linear-gradient(160deg,rgba(255,255,255,0.1),rgba(255,255,255,0.03)_50%,rgba(20,8,45,0.35))] p-4 shadow-[0_20px_50px_-20px_rgba(0,0,0,0.7),inset_0_1px_0_rgba(255,255,255,0.12)]">
@@ -197,8 +186,6 @@ function BookCard({ book }: { book: Book }) {
         </article>
     );
 }
-
-/* ═════════════════════════════ Typing title ═════════════════════════════ */
 
 function TypedTitle({ typed, showCaret }: { typed: number; showCaret: boolean }) {
     const caret = showCaret ? <span className="pf-caret ml-[0.04em] inline-block h-[0.85em] w-[2px] self-center bg-white" /> : null;

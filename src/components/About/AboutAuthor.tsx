@@ -48,7 +48,6 @@ export default function AboutAuthor() {
             aria-labelledby="about-title"
             className={`about relative isolate min-h-[100svh] overflow-hidden bg-black text-white ${onScreen ? "" : "is-paused"}`}
         >
-            {/* warm glows (parallax) */}
             <motion.div
                 aria-hidden
                 className="pointer-events-none absolute -left-[15%] -top-[25%] h-[85%] w-[60%] will-change-transform"
@@ -60,7 +59,6 @@ export default function AboutAuthor() {
                 style={{ y: glowBY, background: "radial-gradient(closest-side, rgba(176,98,28,0.45), rgba(120,60,15,0.14) 55%, transparent)" }}
             />
 
-            {/* fire particles rising from the bottom */}
             {!reduce && (
                 <div aria-hidden className="pointer-events-none absolute inset-0">
                     <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[rgba(255,90,20,0.12)] to-transparent" />
@@ -77,12 +75,10 @@ export default function AboutAuthor() {
             )}
 
             <div className="relative mx-auto grid min-h-[100svh] max-w-[1240px] items-center gap-12 px-6 py-24 md:grid-cols-[minmax(220px,22vw)_1fr] md:gap-14 lg:gap-16 lg:px-10">
-                {/* ── Photo ── */}
                 <motion.div style={{ y: reduce ? 0 : frameY }} className="mx-auto w-full max-w-[22rem] md:max-w-none">
                     <Photo show={show} reduce={reduce} photoY={photoY} />
                 </motion.div>
 
-                {/* ── Text ── */}
                 <motion.div style={{ y: reduce ? 0 : textY }} className="font-body">
                     <motion.p
                         className="about-script text-[clamp(1.4rem,2vw,2.2rem)] leading-tight text-[#d23b2f]"
@@ -126,10 +122,7 @@ function Reveal({ show, delay, children }: { show: boolean; delay: number; child
     );
 }
 
-/* ═════════════════════════════ Photo ═════════════════════════════ */
-
 function Photo({ show, reduce, photoY }: { show: boolean; reduce: boolean; photoY: MotionValue<string> }) {
-    // gentle 3D tilt towards the cursor
     const rx = useMotionValue(0);
     const ry = useMotionValue(0);
     const srx = useSpring(rx, { stiffness: 120, damping: 18 });
@@ -166,7 +159,6 @@ function Photo({ show, reduce, photoY }: { show: boolean; reduce: boolean; photo
                         <img src={hansImg} alt="Portrait of Hans Paladini" decoding="async" draggable={false} className="absolute select-none" style={PHOTO_CROP} />
                     </motion.div>
 
-                    {/* shutter reveal */}
                     {!reduce &&
                         Array.from({ length: SLATS }, (_, i) => (
                             <motion.span
@@ -181,7 +173,6 @@ function Photo({ show, reduce, photoY }: { show: boolean; reduce: boolean; photo
                         ))}
                 </div>
 
-                {/* cream frame: 4 lines that grow in sequence (transform only) */}
                 <motion.span aria-hidden className={`${line} inset-x-0 top-0 h-[3px] origin-left`} {...draw(0.1)} />
                 <motion.span aria-hidden className={`${line} inset-y-0 right-0 w-[3px] origin-top`} {...draw(0.35)} />
                 <motion.span aria-hidden className={`${line} inset-x-0 bottom-0 h-[3px] origin-right`} {...draw(0.6)} />
@@ -190,8 +181,6 @@ function Photo({ show, reduce, photoY }: { show: boolean; reduce: boolean; photo
         </div>
     );
 }
-
-/* ═════════════════════════════ Heading ═════════════════════════════ */
 
 function Heading({ show, reduce }: { show: boolean; reduce: boolean }) {
     const words = ["Hans", "Paladini"];
@@ -220,8 +209,6 @@ function Heading({ show, reduce }: { show: boolean; reduce: boolean }) {
         </h2>
     );
 }
-
-/* ═════════════════════════════ Magnetic button ═════════════════════════════ */
 
 function MagneticButton({ href, reduce, children }: { href: string; reduce: boolean; children: string }) {
     const x = useMotionValue(0);
