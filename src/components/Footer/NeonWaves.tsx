@@ -1,8 +1,9 @@
 import { useEffect, useRef } from "react";
 
-const CYCLE = 4.6; 
-const MEET = 0.55; 
+const CYCLE = 4.6;
+const MEET = 0.55;
 const SPARKS = 70;
+const BLEED = 240; // canvas ko upar/neeche extra jagah, taake burst cut na ho
 
 export default function NeonWaves({ className = "" }: { className?: string }) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -41,8 +42,12 @@ export default function NeonWaves({ className = "" }: { className?: string }) {
         ro.observe(canvas);
 
         const io = new IntersectionObserver(([e]) => {
+            const wasVisible = visible;
             visible = !!e?.isIntersecting;
-            if (visible && !reduce) raf = requestAnimationFrame(draw);
+            if (visible && !wasVisible && !reduce) {
+                cancelAnimationFrame(raf);
+                raf = requestAnimationFrame(draw);
+            }
         });
         io.observe(canvas);
 
@@ -67,13 +72,14 @@ export default function NeonWaves({ className = "" }: { className?: string }) {
         function draw(now: number) {
             const t = (now - start) / 1000;
             const p = reduce ? 0 : (t % CYCLE) / CYCLE;
-            const cy = h * 0.5;
+            const cy = h * 0.5; // bleed dono taraf barabar hai, center wahi rehta hai
             const cx = w / 2;
+            const band = Math.max(1, h - BLEED * 2); // asal 160px wali patti
 
             ctx.clearRect(0, 0, w, h);
             ctx.globalCompositeOperation = "lighter";
 
-            const after = p - MEET; 
+            const after = p - MEET;
             const flash = after >= 0 ? Math.exp(-after / 0.1) : 0;
 
             neon(
@@ -91,7 +97,7 @@ export default function NeonWaves({ className = "" }: { className?: string }) {
                 const xl = ease * cx;
                 const xr = w - ease * cx;
                 const sigma = w * 0.09;
-                const amp = h * 0.17 * (0.55 + 0.45 * ease); 
+                const amp = band * 0.17 * (0.55 + 0.45 * ease);
                 const k = (Math.PI * 2) / Math.max(60, w * 0.035);
                 neon(
                     () => {
@@ -109,7 +115,7 @@ export default function NeonWaves({ className = "" }: { className?: string }) {
             }
 
             if (after >= 0) {
-                const life = after * CYCLE; 
+                const life = after * CYCLE;
 
                 const r = 30 + life * 260;
                 const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
@@ -168,5 +174,12 @@ export default function NeonWaves({ className = "" }: { className?: string }) {
         };
     }, []);
 
-    return <canvas ref={canvasRef} aria-hidden className={`block h-full w-full ${className}`} />;
+    return (
+        <canvas
+            ref={canvasRef}
+            aria-hidden
+            className={`pointer-events-none absolute inset-x-0 block w-full ${className}`}
+            style={{ top: -BLEED, height: `calc(100% + ${BLEED * 2}px)` }}
+        />
+    );
 }

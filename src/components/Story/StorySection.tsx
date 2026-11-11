@@ -90,38 +90,51 @@ function StoryPanel({ story, reduce }: { story: Story; reduce: boolean }) {
     };
 
     return (
-        <article ref={ref} className={`relative z-10 flex h-[100svh] items-center px-[6vw] ${story.side === "right" ? "justify-end" : "justify-start"}`}>
-            <motion.div
-                className="w-full max-w-[38rem] md:w-[46%]"
-                style={{ opacity: reduce ? 1 : opacity, y: reduce ? 0 : y }}
-                initial="hide"
-                whileInView="show"
-                viewport={{ once: true, amount: 0.5 }}
-            >
-                <motion.h3
-                    custom={0}
-                    variants={item}
-                    className="font-heading flex flex-wrap items-baseline gap-x-[0.3em] text-[clamp(2.4rem,5vw,5rem)] font-normal uppercase leading-none tracking-[0.03em] text-white"
+        <article
+            ref={ref}
+            className={`relative z-10 flex h-[100svh] items-center overflow-x-clip px-[6vw] ${story.side === "right" ? "justify-end" : "justify-start"}`}
+        >
+            {/* y wrapper: smoke aur content saath move karte hain */}
+            <motion.div className="relative w-full max-w-[38rem] md:w-[46%]" style={{ y: reduce ? 0 : y }}>
+                {/* Smoke content ke sibling par hai, taake fade ke dauran bhi blur sahi rahe */}
+                <motion.span aria-hidden className="story-smoke" style={{ opacity: reduce ? 1 : opacity }}>
+                    <span className="story-smoke__wisp story-smoke__wisp--a" />
+                    <span className="story-smoke__wisp story-smoke__wisp--b" />
+                    <span className="story-smoke__wisp story-smoke__wisp--c" />
+                </motion.span>
+
+                <motion.div
+                    className="story-content relative"
+                    style={{ opacity: reduce ? 1 : opacity }}
+                    initial="hide"
+                    whileInView="show"
+                    viewport={{ once: true, amount: 0.5 }}
                 >
-                    {story.title.split(" ").map((w, wi) => (
-                        <span key={wi} className="inline-flex items-baseline">
-                            {w.split("").map((ch, j) => (
-                                <span key={j} style={{ fontSize: j === 0 ? "1em" : "0.76em" }}>
-                                    {ch}
-                                </span>
-                            ))}
-                        </span>
-                    ))}
-                </motion.h3>
-                <motion.p custom={1} variants={item} className="font-section mt-3 text-[clamp(1.4rem,2.3vw,2.4rem)] leading-tight text-[#e2392f]">
-                    {story.subtitle}
-                </motion.p>
-                <motion.p custom={2} variants={item} className="font-body mt-2 text-[clamp(0.95rem,1.25vw,1.3rem)] font-bold italic text-white">
-                    {story.line}
-                </motion.p>
-                <motion.p custom={3} variants={item} className="font-body mt-4 text-[clamp(0.82rem,0.92vw,1rem)] font-light italic leading-[1.8] text-white/85">
-                    {story.text}
-                </motion.p>
+                    <motion.h3
+                        custom={0}
+                        variants={item}
+                        className="font-heading flex flex-wrap items-baseline gap-x-[0.3em] text-[clamp(2.4rem,5vw,5rem)] font-normal uppercase leading-none tracking-[0.03em] text-white"
+                    >
+                        {story.title.split(" ").map((w, wi) => (
+                            <span key={wi} className="inline-flex items-baseline">
+                                {w.split("").map((ch, j) => (
+                                    <span key={j} style={{ fontSize: j === 0 ? "1em" : "0.76em" }}>
+                                        {ch}
+                                    </span>
+                                ))}
+                            </span>
+                        ))}
+                    </motion.h3>
+                    <motion.p custom={1} variants={item} className="font-section mt-3 text-[clamp(1.4rem,2.3vw,2.4rem)] leading-tight text-[#ff4a3d]">
+                        {story.subtitle}
+                    </motion.p>
+                    <motion.p custom={2} variants={item} className="font-body mt-2 text-[clamp(0.95rem,1.25vw,1.3rem)] font-bold italic text-white">
+                        {story.line}
+                    </motion.p>
+                    <motion.p custom={3} variants={item} className="font-body mt-4 text-[clamp(0.82rem,0.92vw,1rem)] font-light italic leading-[1.8] text-white/90">
+                        {story.text}
+                    </motion.p>
+                </motion.div>
             </motion.div>
         </article>
     );

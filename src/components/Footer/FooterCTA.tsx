@@ -1,5 +1,5 @@
 import { useMemo, useRef, type CSSProperties } from "react";
-import { motion, useInView } from "framer-motion";
+import { motion, useInView, useReducedMotion } from "framer-motion";
 import NeonWaves from "./NeonWaves";
 import "./footer.css";
 
@@ -37,6 +37,9 @@ const SOCIAL = [
 
 const EASE_OUT = [0.16, 1, 0.3, 1] as const;
 
+// Eclipse ka center: heading wale content block ke beech mein
+const ECLIPSE_TOP = "calc(clamp(6rem, 10vw, 9rem) + 10.5rem)";
+
 export default function FooterCTA() {
     const ref = useRef<HTMLElement>(null);
     const seen = useInView(ref, { once: true, amount: 0.25 });
@@ -62,7 +65,7 @@ export default function FooterCTA() {
 
     return (
         <footer ref={ref} id="contact" className={`ft relative isolate overflow-hidden bg-[#07031a] text-white ${onScreen ? "" : "ft-paused"}`}>
-            <div aria-hidden className="absolute inset-0 -z-10">
+            <div aria-hidden className="absolute inset-0 -z-10" style={{ "--ecl-top": ECLIPSE_TOP } as CSSProperties}>
                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_90%_60%_at_50%_100%,rgba(150,40,200,0.55),rgba(50,15,110,0.35)_45%,transparent_75%)]" />
                 {stars.map((s, i) => (
                     <span
@@ -71,13 +74,17 @@ export default function FooterCTA() {
                         style={{ left: s.left, top: s.top, width: s.size, height: s.size, "--d": s.d, "--delay": s.delay } as CSSProperties}
                     />
                 ))}
-                <span className="ft-ring absolute left-1/2 top-[32%] h-[min(70vw,720px)] w-[min(70vw,720px)] rounded-full border border-violet-300/25" />
-                <span className="ft-ring absolute left-1/2 top-[32%] h-[min(70vw,720px)] w-[min(70vw,720px)] rounded-full border border-violet-300/20" style={{ animationDelay: "-3s" }} />
+                <span className="ft-ring absolute left-1/2 top-[var(--ecl-top)] h-[min(70vw,720px)] w-[min(70vw,720px)] rounded-full border border-violet-300/25" />
+                <span className="ft-ring absolute left-1/2 top-[var(--ecl-top)] h-[min(70vw,720px)] w-[min(70vw,720px)] rounded-full border border-violet-300/20" style={{ animationDelay: "-3s" }} />
+                <Eclipse seen={seen} />
                 <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-black to-transparent" />
             </div>
 
-            <div className="mx-auto max-w-4xl px-6 pb-16 pt-[clamp(6rem,10vw,9rem)] text-center">
-                <motion.h2 {...rise(0)} className="font-heading text-[clamp(2rem,4.2vw,4.2rem)] font-normal uppercase leading-[1.1] tracking-[0.04em]">
+            <div className="relative z-10 mx-auto max-w-4xl px-6 pb-16 pt-[clamp(6rem,10vw,9rem)] text-center">
+                <motion.h2
+                    {...rise(0)}
+                    className="font-heading text-[clamp(2rem,4.2vw,4.2rem)] font-normal uppercase leading-[1.1] tracking-[0.04em] [text-shadow:0_2px_28px_rgba(7,3,26,0.9)]"
+                >
                     <SmallCaps text="Lorem Ipsum Is Simply Dummy Text Of The Printing" />
                 </motion.h2>
                 <motion.span
@@ -87,7 +94,10 @@ export default function FooterCTA() {
                     animate={seen ? "on" : "off"}
                     variants={{ off: { scaleX: 0 }, on: { scaleX: 1, transition: { delay: 0.3, duration: 0.9, ease: EASE_OUT } } }}
                 />
-                <motion.p {...rise(0.35)} className="font-body mx-auto mt-6 max-w-md text-[clamp(0.85rem,0.95vw,1rem)] text-white/80">
+                <motion.p
+                    {...rise(0.35)}
+                    className="font-body mx-auto mt-6 max-w-md text-[clamp(0.85rem,0.95vw,1rem)] text-white/85 [text-shadow:0_1px_16px_rgba(7,3,26,0.95)]"
+                >
                     The purpose of a FAQ is generally to provide information on frequent questions or concerns.
                 </motion.p>
                 <motion.div {...rise(0.5)} className="mt-7">
@@ -100,7 +110,7 @@ export default function FooterCTA() {
                 </motion.div>
             </div>
 
-            <div className="mx-auto mt-8 flex max-w-6xl flex-col items-center justify-between gap-6 px-6 md:flex-row">
+            <div className="relative z-10 mx-auto mt-8 flex max-w-6xl flex-col items-center justify-between gap-6 px-6 md:flex-row">
                 <a href="#home" className="font-heading text-[clamp(1.8rem,3vw,2.8rem)] uppercase leading-none tracking-[0.04em]">
                     <SmallCaps text="Hans Paladini" />
                 </a>
@@ -121,7 +131,7 @@ export default function FooterCTA() {
                 <NeonWaves />
             </div>
 
-            <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 pb-8 md:flex-row">
+            <div className="relative z-10 mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 pb-8 md:flex-row">
                 <p className="font-body text-xs text-white/60">© {new Date().getFullYear()} Hans Paladini. All rights reserved</p>
                 <ul className="flex gap-3">
                     {SOCIAL.map((s) => (
@@ -138,6 +148,49 @@ export default function FooterCTA() {
                 </ul>
             </div>
         </footer>
+    );
+}
+
+/**
+ * Solar eclipse: suraj dikhta hai, chaand slide ho kar usay dhak leta hai,
+ * phir corona chamakta hai aur edge par "diamond ring" flash hota hai.
+ */
+function Eclipse({ seen }: { seen: boolean }) {
+    const reduce = useReducedMotion();
+    const play = seen || !!reduce;
+    const t = (duration: number, delay = 0) => (reduce ? { duration: 0 } : { duration, delay, ease: EASE_OUT });
+
+    return (
+        <div className="ecl absolute left-1/2 top-[var(--ecl-top)] -translate-x-1/2 -translate-y-1/2">
+            <motion.div
+                className="ecl-haze"
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={play ? { opacity: 1, scale: 1 } : {}}
+                transition={t(2.4, 1)}
+            />
+
+            <motion.div className="ecl-corona" initial={{ opacity: 0 }} animate={play ? { opacity: 1 } : {}} transition={t(1.8, 1.3)}>
+                <div className="ecl-streamers ecl-streamers--a" />
+                <div className="ecl-streamers ecl-streamers--b" />
+                <div className="ecl-glow" />
+            </motion.div>
+
+            <motion.div className="ecl-sun" initial={{ opacity: 1 }} animate={play ? { opacity: 0 } : {}} transition={t(0.8, 1.9)} />
+
+            <motion.div
+                className="ecl-moon"
+                initial={{ x: "-42%", y: "10%" }}
+                animate={play ? { x: "0%", y: "0%" } : {}}
+                transition={t(2.2, 0.1)}
+            />
+
+            <motion.span
+                className="ecl-diamond"
+                initial={{ opacity: 0, scale: 0.2 }}
+                animate={play ? { opacity: [0, 1, 0.9], scale: [0.2, 1.5, 1] } : {}}
+                transition={reduce ? { duration: 0 } : { duration: 1.4, delay: 2.1, times: [0, 0.35, 1], ease: EASE_OUT }}
+            />
+        </div>
     );
 }
 

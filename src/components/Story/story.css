@@ -3,3 +3,103 @@
     user-select: none;
     -webkit-user-drag: none;
 }
+
+.story-smoke {
+    position: absolute;
+    inset: -22% -18%;
+    pointer-events: none;
+    background: radial-gradient(ellipse closest-side,
+            rgba(0, 0, 0, 0.62) 0%,
+            rgba(0, 0, 0, 0.45) 40%,
+            rgba(0, 0, 0, 0.18) 70%,
+            transparent 100%);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+    -webkit-mask-image: radial-gradient(ellipse closest-side, #000 30%, rgba(0, 0, 0, 0.6) 60%, transparent 100%);
+    mask-image: radial-gradient(ellipse closest-side, #000 30%, rgba(0, 0, 0, 0.6) 60%, transparent 100%);
+}
+
+.story-smoke__wisp {
+    position: absolute;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.25) 55%, transparent 100%);
+    filter: blur(28px);
+    will-change: transform;
+}
+
+.story-smoke__wisp--a {
+    width: 70%;
+    height: 55%;
+    left: 8%;
+    top: 12%;
+    animation: smoke-drift-a 16s ease-in-out infinite alternate;
+}
+
+.story-smoke__wisp--b {
+    width: 60%;
+    height: 50%;
+    right: 6%;
+    top: 30%;
+    animation: smoke-drift-b 20s ease-in-out infinite alternate;
+}
+
+.story-smoke__wisp--c {
+    width: 55%;
+    height: 45%;
+    left: 22%;
+    bottom: 8%;
+    animation: smoke-drift-c 18s ease-in-out infinite alternate;
+}
+
+@keyframes smoke-drift-a {
+    from {
+        transform: translate3d(-4%, 0, 0) scale(1);
+    }
+
+    to {
+        transform: translate3d(6%, -5%, 0) scale(1.12);
+    }
+}
+
+@keyframes smoke-drift-b {
+    from {
+        transform: translate3d(5%, 3%, 0) scale(1.08);
+    }
+
+    to {
+        transform: translate3d(-6%, -3%, 0) scale(0.95);
+    }
+}
+
+@keyframes smoke-drift-c {
+    from {
+        transform: translate3d(0, 4%, 0) scale(0.95);
+    }
+
+    to {
+        transform: translate3d(-5%, -4%, 0) scale(1.1);
+    }
+}
+
+.story-content h3,
+.story-content p {
+    text-shadow: 0 2px 20px rgba(0, 0, 0, 0.55);
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .story-smoke {
+        background: radial-gradient(ellipse closest-side, rgba(0, 0, 0, 0.75) 0%, rgba(0, 0, 0, 0.5) 45%, transparent 100%);
+    }
+}
+
+@media (max-width: 767px) {
+    .story-smoke {
+        inset: -14% -10%;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .story-smoke__wisp {
+        animation: none;
+    }
+}

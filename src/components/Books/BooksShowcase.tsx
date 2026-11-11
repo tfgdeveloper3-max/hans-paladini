@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties, type RefObject } from "react";
 import {
+    animate,
     AnimatePresence,
     motion,
     MotionValue,
@@ -59,6 +60,10 @@ const PER_BOOK = 90;
 const EXIT = 70;
 const BOOKS_SPAN = (N - 1) * PER_BOOK;
 
+/** Ek scroll par ek book: slide ka time aur easing */
+const SNAP_DURATION = 1.15;
+const SNAP_EASE = [0.65, 0, 0.35, 1] as const;
+
 type ThemeCfg = {
     count: number;
     anim: "bk-rise" | "bk-drift" | "bk-wander" | "bk-float";
@@ -89,6 +94,17 @@ function seeded(seed: number) {
         return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
     };
 }
+
+/**
+ * Content sirf tab dikhta hai jab slide apni jagah par ruki ho.
+ * Swipe ke beech mein sirf background nazar aata hai, is liye flicker nahi hota.
+ */
+const settled = (v: number) => {
+    const d = Math.abs(v - Math.round(v));
+    if (d < 0.06) return 1;
+    if (d > 0.28) return 0;
+    return 1 - (d - 0.06) / 0.22;
+};
 
 function Particles({ theme, seed }: { theme: Theme; seed: number }) {
     const cfg = THEMES[theme];
@@ -137,11 +153,152 @@ function Particles({ theme, seed }: { theme: Theme; seed: number }) {
     );
 }
 
+/**
+ * Wheel / touch / keyboard ke ek gesture par agli ya pichli book tak
+ * smoothly scroll karta hai. Section ke bahar normal scroll chalta hai.
+ */
+function useBookSnap(sectionRef: RefObject<HTMLElement>, stickyRef: RefObject<HTMLDivElement>, reduce: boolean) {
+    useEffect(() => {
+        const section = sectionRef.current;
+        const sticky = stickyRef.current;
+        if (!section || !sticky) return;
+
+        let anim: ReturnType<typeof animate> | null = null;
+        let locked = false;
+        let lastWheel = 0;
+        let touchStartY = 0;
+        let touchHandled = false;
+
+        const geo = () => {
+            const top = section.getBoundingClientRect().top + window.scrollY;
+            const range = section.offsetHeight - sticky.offsetHeight;
+            const step = (range * PER_BOOK) / (BOOKS_SPAN + EXIT);
+            return { top, step, end: top + (N - 1) * step, bottom: top + range };
+        };
+
+        // Kis scroll position par jana hai; null = normal scroll chalne do
+        const targetFor = (dir: number): number | null => {
+            const { top, step, end, bottom } = geo();
+            const y = window.scrollY;
+            if (y < top - 1 || y > bottom + 1) return null;
+            const rel = (y - top) / step;
+            if (dir > 0) {
+                if (y >= end - 1) return null; // aakhri book ke baad section se bahar nikal jao
+                const k = Math.min(N - 1, Math.floor(rel + 0.02) + 1);
+                return top + k * step;
+            }
+            if (y <= top + 1) return null; // pehli book se upar normal scroll
+            if (y > end + 1) return end; // neeche se wapas aate hue aakhri book par ruko
+            const k = Math.max(0, Math.ceil(rel - 0.02) - 1);
+            return top + k * step;
+        };
+
+        const unlockWhenQuiet = () => {
+            // Trackpad ki inertia khatam hone tak agla gesture na pakdo
+            if (performance.now() - lastWheel > 160) locked = false;
+            else window.setTimeout(unlockWhenQuiet, 60);
+        };
+
+        const go = (to: number) => {
+            locked = true;
+            anim?.stop();
+            anim = animate(window.scrollY, to, {
+                duration: reduce ? 0 : SNAP_DURATION,
+                ease: SNAP_EASE,
+                onUpdate: (v) => window.scrollTo({ top: v, behavior: "instant" as ScrollBehavior }),
+                onComplete: unlockWhenQuiet,
+            });
+        };
+
+        const onWheel = (e: WheelEvent) => {
+            lastWheel = performance.now();
+            if (e.ctrlKey) return; // pinch zoom
+            if (locked) {
+                e.preventDefault();
+                return;
+            }
+            if (Math.abs(e.deltaY) < 2) return;
+            const t = targetFor(Math.sign(e.deltaY));
+            if (t === null) return;
+            e.preventDefault();
+            go(t);
+        };
+
+        const onTouchStart = (e: TouchEvent) => {
+            touchStartY = e.touches[0]?.clientY ?? 0;
+            touchHandled = false;
+        };
+
+        const onTouchMove = (e: TouchEvent) => {
+            if (locked) {
+                e.preventDefault();
+                return;
+            }
+            const dy = touchStartY - (e.touches[0]?.clientY ?? touchStartY);
+            if (Math.abs(dy) < 6) return;
+            const t = targetFor(Math.sign(dy));
+            if (t === null) return;
+            e.preventDefault();
+            if (!touchHandled && Math.abs(dy) > 30) {
+                touchHandled = true;
+                go(t);
+            }
+        };
+
+        // Scrollbar drag ya kisi bhi wajah se slide beech mein ruk jaye to nearest book par le jao
+        let idleTimer = 0;
+        const onScroll = () => {
+            if (locked) return;
+            window.clearTimeout(idleTimer);
+            idleTimer = window.setTimeout(() => {
+                if (locked) return;
+                const { top, step, end } = geo();
+                const y = window.scrollY;
+                if (y <= top + 1 || y >= end - 1) return;
+                const t = top + Math.round((y - top) / step) * step;
+                if (Math.abs(t - y) > 2) go(t);
+            }, 140);
+        };
+
+        const onKey = (e: KeyboardEvent) => {
+            const el = e.target as HTMLElement | null;
+            if (el && (el.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName))) return;
+            const dir = ["ArrowDown", "PageDown", " "].includes(e.key) ? 1 : ["ArrowUp", "PageUp"].includes(e.key) ? -1 : 0;
+            if (!dir) return;
+            if (locked) {
+                e.preventDefault();
+                return;
+            }
+            const t = targetFor(e.shiftKey && e.key === " " ? -1 : dir);
+            if (t === null) return;
+            e.preventDefault();
+            go(t);
+        };
+
+        window.addEventListener("wheel", onWheel, { passive: false });
+        window.addEventListener("touchstart", onTouchStart, { passive: true });
+        window.addEventListener("touchmove", onTouchMove, { passive: false });
+        window.addEventListener("keydown", onKey);
+        window.addEventListener("scroll", onScroll, { passive: true });
+        return () => {
+            anim?.stop();
+            window.clearTimeout(idleTimer);
+            window.removeEventListener("scroll", onScroll);
+            window.removeEventListener("wheel", onWheel);
+            window.removeEventListener("touchstart", onTouchStart);
+            window.removeEventListener("touchmove", onTouchMove);
+            window.removeEventListener("keydown", onKey);
+        };
+    }, [sectionRef, stickyRef, reduce]);
+}
+
 export default function BooksShowcase() {
     const ref = useRef<HTMLElement>(null);
     const stickyRef = useRef<HTMLDivElement>(null);
     const reduce = useReducedMotion() ?? false;
     const onScreen = useInView(stickyRef, { amount: 0.1 });
+
+    useBookSnap(ref, stickyRef, reduce);
 
     const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end end"] });
     const progress = scrollYProgress;
@@ -156,7 +313,7 @@ export default function BooksShowcase() {
     const [loaded, setLoaded] = useState<Set<number>>(() => new Set([0, 1]));
     useMotionValueEvent(pos, "change", (v) => {
         const a = Math.min(N - 1, Math.max(0, Math.round(v)));
-        setActive((prev) => (prev === a ? prev : a)); 
+        setActive((prev) => (prev === a ? prev : a));
         setLoaded((prev) => {
             if ([a - 1, a, a + 1].every((n) => n < 0 || n >= N || prev.has(n))) return prev;
             const next = new Set(prev);
@@ -203,38 +360,43 @@ export default function BooksShowcase() {
                     aria-hidden
                     className="pointer-events-none absolute inset-0"
                     style={{
+                        zIndex: N,
                         background:
-                            "radial-gradient(ellipse 80% 70% at 50% 50%, rgba(0,0,0,0.35), rgba(0,0,0,0.75) 100%), linear-gradient(to bottom, rgba(0,0,0,0.35), transparent 30%, transparent 70%, rgba(0,0,0,0.55))",
+                            "radial-gradient(ellipse 80% 70% at 50% 50%, rgba(0,0,0,0.3), rgba(0,0,0,0.7) 100%), linear-gradient(to bottom, rgba(0,0,0,0.35), transparent 30%, transparent 70%, rgba(0,0,0,0.55))",
                     }}
                 />
 
                 {!reduce && (
-                    <AnimatePresence>
-                        <Particles key={active} theme={BOOKS[active]?.theme ?? "embers"} seed={active} />
-                    </AnimatePresence>
+                    <div className="pointer-events-none absolute inset-0" style={{ zIndex: N + 1 }}>
+                        <AnimatePresence>
+                            <Particles key={active} theme={BOOKS[active]?.theme ?? "embers"} seed={active} />
+                        </AnimatePresence>
+                    </div>
                 )}
 
                 <motion.div
                     className="absolute inset-0 flex items-center justify-center px-[4vw] py-[8svh] will-change-transform"
-                    style={{ y: exitY, scale: exitScale, opacity: exitOpacity }}
+                    style={{ y: exitY, scale: exitScale, opacity: exitOpacity, zIndex: N + 2 }}
                 >
                     <div className="relative w-full max-w-[1180px]">
-                        <div
-                            aria-hidden
-                            className="absolute inset-0 rounded-[28px] border border-white/15 bg-[linear-gradient(135deg,rgba(255,255,255,0.09),rgba(255,255,255,0.02)_45%,rgba(0,0,0,0.25))] shadow-[0_40px_120px_-30px_rgba(0,0,0,0.9),inset_0_1px_0_rgba(255,255,255,0.12)]"
-                        />
-                        <div className="relative grid">
-                            {BOOKS.map((b, i) => (
-                                <Slide key={i} book={b} i={i} pos={pos} isActive={i === active} load={loaded.has(i)} />
-                            ))}
+                        {/* Bahar ka narm dhuaan, glass ke kinaron se nikalta hua */}
+                        <span aria-hidden className="bk-halo" />
+
+                        {/* Glass container: hamesha jagah par rehta hai, sirf andar ka content badalta hai */}
+                        <div aria-hidden className="bk-glass">
+                            <span className="bk-glass__wisp bk-glass__wisp--a" />
+                            <span className="bk-glass__wisp bk-glass__wisp--b" />
+                            <span className="bk-glass__wisp bk-glass__wisp--c" />
                         </div>
+
+                        <ActiveBook active={active} pos={pos} loaded={loaded} />
                     </div>
                 </motion.div>
 
                 <motion.div
                     aria-hidden
                     className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_top,#000_0%,#000_18%,rgba(0,0,0,0.55)_50%,transparent_80%)]"
-                    style={{ opacity: fadeOpacity }}
+                    style={{ opacity: fadeOpacity, zIndex: N + 3 }}
                 />
             </div>
         </section>
@@ -245,87 +407,120 @@ function Background({ src, i, pos }: { src: string; i: number; pos: MotionValue<
     const x = useTransform(pos, (v) => `${(i - v) * 100}%`);
     const innerX = useTransform(pos, (v) => `${(v - i) * 18}%`);
     const visibility = useTransform(pos, (v) => (Math.abs(i - v) < 1.02 ? "visible" : "hidden"));
+    // Seam (do images ka jod) screen ke beech mein ho to poora, kinaron par gayab
+    const seamOpacity = useTransform(pos, (v) => {
+        const d = i - v;
+        if (d <= 0 || d >= 1) return 0;
+        return Math.sin(Math.PI * d) * 0.85;
+    });
 
     return (
-        <motion.div aria-hidden className="absolute inset-0 overflow-hidden" style={{ x, visibility }}>
-            <motion.img
-                src={src}
-                alt=""
-                decoding="async"
-                className="absolute inset-y-0 left-[-12%] h-full w-[124%] max-w-none object-cover"
-                style={{ x: innerX }}
-            />
-            <div className="absolute inset-y-0 left-0 w-[14%] bg-gradient-to-r from-black/70 to-transparent" />
-            <div className="absolute inset-y-0 right-0 w-[14%] bg-gradient-to-l from-black/70 to-transparent" />
+        <motion.div aria-hidden className="absolute inset-0" style={{ x, visibility, zIndex: i }}>
+            <div className="absolute inset-0 overflow-hidden">
+                <motion.img
+                    src={src}
+                    alt=""
+                    decoding="async"
+                    className="absolute inset-y-0 left-[-12%] h-full w-[124%] max-w-none object-cover"
+                    style={{ x: innerX }}
+                />
+            </div>
+            {i > 0 && <motion.span className="bk-seam" style={{ opacity: seamOpacity }} />}
         </motion.div>
     );
 }
 
-function Slide({ book, i, pos, isActive, load }: { book: Book; i: number; pos: MotionValue<number>; isActive: boolean; load: boolean }) {
-
-    const opacity = useTransform(pos, [i - 0.5, i - 0.2, i + 0.2, i + 0.5], [0, 1, 1, 0]);
-    const visibility = useTransform(opacity, (o) => (o > 0.001 ? "visible" : "hidden"));
-    const textScale = useTransform(pos, [i - 0.5, i, i + 0.5], [0.97, 1, 0.97]);
-    const coverScale = useTransform(pos, [i - 0.5, i, i + 0.5], [0.92, 1, 0.92]);
-    const coverRotY = useTransform(pos, [i - 0.5, i, i + 0.5], [-10, 0, 10]);
+/** Sirf active book ka content render hota hai, sab ek hi jagah par aligned */
+function ActiveBook({ active, pos, loaded }: { active: number; pos: MotionValue<number>; loaded: Set<number> }) {
+    const book = BOOKS[active] ?? BOOKS[0]!;
+    const opacity = useTransform(pos, settled);
+    const textY = useTransform(pos, (v) => (v - Math.round(v)) * -80);
+    const coverY = useTransform(pos, (v) => (v - Math.round(v)) * -40);
+    const coverScale = useTransform(opacity, [0, 1], [0.94, 1]);
+    const pointerEvents = useTransform(opacity, (o) => (o > 0.5 ? "auto" : "none"));
 
     return (
-        <motion.article
-            className="relative grid items-center gap-8 px-8 py-10 [grid-area:1/1] md:grid-cols-[1.25fr_1fr] md:py-12 lg:px-16"
-            style={{ opacity, visibility }}
-            aria-hidden={!isActive}
-        >
-            <div
+        <div className="relative grid items-center gap-8 px-8 py-10 md:grid-cols-[1.25fr_1fr] md:py-12 lg:px-16">
+            <motion.span
                 aria-hidden
-                className="pointer-events-none absolute -right-[10%] -top-[20%] h-[140%] w-[60%]"
-                style={{ background: `radial-gradient(closest-side, ${book.accent}33, transparent)` }}
-            />
-            <span aria-hidden className="bk-number font-heading pointer-events-none absolute -left-2 -top-6 select-none text-[clamp(8rem,16vw,15rem)] leading-none">
-                {String(i + 1).padStart(2, "0")}
-            </span>
+                className="bk-number font-heading pointer-events-none absolute -left-2 -top-6 select-none text-[clamp(8rem,16vw,15rem)] leading-none"
+                style={{ opacity }}
+            >
+                {String(active + 1).padStart(2, "0")}
+            </motion.span>
 
-            <motion.div className="relative order-2 origin-left md:order-1" style={{ scale: textScale }}>
-                <h3 className="font-heading flex items-baseline text-[clamp(2.6rem,5vw,5.2rem)] font-normal uppercase leading-[0.95] tracking-[0.03em] text-white">
-                    {book.title.split(" ").map((w, wi) => (
-                        <span key={wi} className="mr-[0.35em] inline-flex items-baseline">
-                            {w.split("").map((ch, j) => (
-                                <span key={j} style={{ fontSize: j === 0 ? "1em" : "0.76em" }}>
-                                    {ch}
-                                </span>
-                            ))}
-                        </span>
-                    ))}
-                </h3>
-                <p className="font-section mt-2 text-[clamp(1.5rem,2.4vw,2.6rem)] leading-tight" style={{ color: book.accent }}>
-                    {book.subtitle}
-                </p>
-                <p className="font-body mt-3 text-[clamp(1rem,1.35vw,1.45rem)] font-bold italic text-white">{book.line}</p>
-                <p className="font-body mt-5 max-w-[34rem] text-[clamp(0.82rem,0.92vw,1rem)] font-light italic leading-[1.8] text-white/85">{book.desc}</p>
-                <div className="mt-7 flex flex-wrap gap-4">
-                    <BookButton href={book.links.ebook} tabbable={isActive}>Ebook</BookButton>
-                    <BookButton href={book.links.paperback} tabbable={isActive}>Paperback</BookButton>
-                    <BookButton href={book.links.hardcover} tabbable={isActive}>Hardcover</BookButton>
-                </div>
+            {/* Text column: smoke aur text saath move karte hain */}
+            <motion.div className="relative order-2 md:order-1" style={{ y: textY }}>
+                <motion.span aria-hidden className="bk-smoke" style={{ opacity }}>
+                    <span className="bk-smoke__wisp bk-smoke__wisp--a" />
+                    <span className="bk-smoke__wisp bk-smoke__wisp--b" />
+                    <span className="bk-smoke__wisp bk-smoke__wisp--c" />
+                </motion.span>
+
+                <motion.div className="bk-content relative" style={{ opacity, pointerEvents }}>
+                    <h3 className="font-heading flex items-baseline text-[clamp(2.6rem,5vw,5.2rem)] font-normal uppercase leading-[0.95] tracking-[0.03em] text-white">
+                        {book.title.split(" ").map((w, wi) => (
+                            <span key={wi} className="mr-[0.35em] inline-flex items-baseline">
+                                {w.split("").map((ch, j) => (
+                                    <span key={j} style={{ fontSize: j === 0 ? "1em" : "0.76em" }}>
+                                        {ch}
+                                    </span>
+                                ))}
+                            </span>
+                        ))}
+                    </h3>
+                    <p className="font-section mt-2 text-[clamp(1.5rem,2.4vw,2.6rem)] leading-tight" style={{ color: book.accent }}>
+                        {book.subtitle}
+                    </p>
+                    <p className="font-body mt-3 text-[clamp(1rem,1.35vw,1.45rem)] font-bold italic text-white">{book.line}</p>
+                    <p className="font-body mt-5 max-w-[34rem] text-[clamp(0.82rem,0.92vw,1rem)] font-light italic leading-[1.8] text-white/90">{book.desc}</p>
+                    <div className="mt-7 flex flex-wrap gap-4">
+                        <BookButton href={book.links.ebook}>Ebook</BookButton>
+                        <BookButton href={book.links.paperback}>Paperback</BookButton>
+                        <BookButton href={book.links.hardcover}>Hardcover</BookButton>
+                    </div>
+                </motion.div>
             </motion.div>
 
-            <div className="relative order-1 flex justify-center md:order-2" style={{ perspective: 1200 }}>
-                <motion.div className="relative w-[clamp(160px,22vw,360px)]" style={{ scale: coverScale, rotateY: coverRotY }}>
-                    <div aria-hidden className="absolute -inset-[18%] -z-10" style={{ background: `radial-gradient(closest-side, ${book.accent}40, transparent 70%)` }} />
-                    <div aria-hidden className="absolute -bottom-[6%] left-[8%] right-[8%] -z-10 h-[10%]" style={{ background: "radial-gradient(closest-side, rgba(0,0,0,0.85), transparent)" }} />
-                    <div className="aspect-[1622/2321] w-full">
-                        {load && <img src={book.cover} alt={`${book.title} — ${book.line}`} decoding="async" draggable={false} className="h-full w-full object-contain" />}
+            {/* Cover column: sab covers ek hi box mein stacked, sirf active dikhta hai */}
+            <div className="relative order-1 flex justify-center md:order-2">
+                <motion.div className="relative w-[clamp(160px,22vw,360px)]" style={{ opacity, y: coverY, scale: coverScale }}>
+                    <div
+                        aria-hidden
+                        className="absolute -inset-[18%] -z-10 transition-[background] duration-500"
+                        style={{ background: `radial-gradient(closest-side, ${book.accent}40, transparent 70%)` }}
+                    />
+                    <div
+                        aria-hidden
+                        className="absolute -bottom-[6%] left-[8%] right-[8%] -z-10 h-[10%]"
+                        style={{ background: "radial-gradient(closest-side, rgba(0,0,0,0.85), transparent)" }}
+                    />
+                    <div className="relative aspect-[1622/2321] w-full">
+                        {BOOKS.map((b, k) =>
+                            loaded.has(k) ? (
+                                <img
+                                    key={k}
+                                    src={b.cover}
+                                    alt={k === active ? `${b.title} — ${b.line}` : ""}
+                                    aria-hidden={k !== active}
+                                    decoding="async"
+                                    draggable={false}
+                                    className="absolute inset-0 h-full w-full object-contain object-center"
+                                    style={{ opacity: k === active ? 1 : 0 }}
+                                />
+                            ) : null,
+                        )}
                     </div>
                 </motion.div>
             </div>
-        </motion.article>
+        </div>
     );
 }
 
-function BookButton({ href, tabbable, children }: { href: string; tabbable: boolean; children: string }) {
+function BookButton({ href, children }: { href: string; children: string }) {
     return (
         <a
             href={href}
-            tabIndex={tabbable ? 0 : -1}
             className="bk-btn font-body relative inline-flex min-w-[8.5rem] items-center justify-center overflow-hidden rounded-full border border-[#ffb27a]/70 bg-gradient-to-b from-[#f38a45] to-[#d9622a] px-7 py-3 text-[clamp(0.85rem,0.95vw,1rem)] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.45),inset_0_-2px_6px_rgba(120,40,0,0.35),0_8px_24px_-6px_rgba(240,120,50,0.6)] outline-none transition-transform duration-300 hover:-translate-y-[3px] active:scale-95 focus-visible:ring-2 focus-visible:ring-orange-300"
         >
             <span aria-hidden className="bk-btn-shine pointer-events-none absolute inset-y-0 left-0 w-1/3 bg-gradient-to-r from-transparent via-white/45 to-transparent" />

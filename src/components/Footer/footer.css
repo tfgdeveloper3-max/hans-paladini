@@ -1,34 +1,4 @@
-.ft-grid-wrap {
-    perspective: 420px;
-    perspective-origin: 50% 0%;
-}
-
-.ft-grid {
-    position: absolute;
-    left: -50%;
-    right: -50%;
-    top: 0;
-    height: 200%;
-    transform-origin: 50% 0%;
-    transform: rotateX(72deg);
-    background-image:
-        linear-gradient(rgba(255, 70, 200, 0.3) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(160, 90, 255, 0.28) 1px, transparent 1px);
-    background-size: 60px 60px;
-    will-change: transform;
-    animation: ft-grid 3s linear infinite;
-}
-
-@keyframes ft-grid {
-    from {
-        transform: rotateX(72deg) translate3d(0, 0, 0);
-    }
-
-    to {
-        transform: rotateX(72deg) translate3d(0, 60px, 0);
-    }
-}
-
+/* ---------- Stars ---------- */
 @keyframes ft-twinkle {
 
     0%,
@@ -45,6 +15,7 @@
     animation: ft-twinkle var(--d, 3s) ease-in-out var(--delay, 0s) infinite;
 }
 
+/* ---------- Shockwave rings (eclipse se nikalte hue) ---------- */
 @keyframes ft-ring {
     0% {
         transform: translate(-50%, -50%) scale(0.6);
@@ -62,12 +33,228 @@
     will-change: transform, opacity;
 }
 
-.ft-paused .ft-grid,
+/* ---------- Solar eclipse ---------- */
+.ecl {
+    width: min(92vw, 820px);
+    aspect-ratio: 1;
+    pointer-events: none;
+}
+
+.ecl>* {
+    position: absolute;
+}
+
+/* Bahar ki narm pink/violet roshni */
+.ecl-haze {
+    inset: -28%;
+    border-radius: 50%;
+    background: radial-gradient(circle closest-side,
+            rgba(255, 170, 225, 0.3) 0%,
+            rgba(200, 80, 230, 0.2) 28%,
+            rgba(110, 50, 230, 0.12) 50%,
+            transparent 72%);
+    filter: blur(12px);
+    animation: ecl-breathe 9s ease-in-out infinite;
+}
+
+.ecl-corona {
+    inset: 0;
+}
+
+/* Corona ki kirnein: conic rays, ring shape mein mask */
+.ecl-streamers {
+    position: absolute;
+    border-radius: 50%;
+    mix-blend-mode: screen;
+    filter: blur(5px);
+    -webkit-mask: radial-gradient(circle closest-side, transparent 44%, #000 47.5%, rgba(0, 0, 0, 0.55) 64%, transparent 100%);
+    mask: radial-gradient(circle closest-side, transparent 44%, #000 47.5%, rgba(0, 0, 0, 0.55) 64%, transparent 100%);
+}
+
+.ecl-streamers--a {
+    inset: 0;
+    background: conic-gradient(from 8deg,
+            transparent 0deg,
+            rgba(255, 240, 225, 0.85) 7deg,
+            transparent 15deg,
+            rgba(255, 215, 240, 0.45) 30deg,
+            transparent 40deg,
+            rgba(255, 245, 230, 0.9) 58deg,
+            transparent 68deg,
+            rgba(255, 200, 235, 0.35) 92deg,
+            transparent 104deg,
+            rgba(255, 240, 225, 0.75) 128deg,
+            transparent 137deg,
+            rgba(255, 225, 245, 0.5) 162deg,
+            transparent 176deg,
+            rgba(255, 245, 230, 0.9) 198deg,
+            transparent 207deg,
+            rgba(255, 210, 240, 0.4) 232deg,
+            transparent 244deg,
+            rgba(255, 240, 225, 0.8) 268deg,
+            transparent 279deg,
+            rgba(255, 220, 240, 0.45) 302deg,
+            transparent 314deg,
+            rgba(255, 245, 230, 0.85) 336deg,
+            transparent 346deg);
+    animation: ecl-spin 140s linear infinite;
+}
+
+.ecl-streamers--b {
+    inset: 6%;
+    opacity: 0.75;
+    background: conic-gradient(from 40deg,
+            transparent 0deg,
+            rgba(255, 110, 220, 0.6) 12deg,
+            transparent 26deg,
+            rgba(150, 110, 255, 0.55) 60deg,
+            transparent 78deg,
+            rgba(255, 140, 225, 0.55) 120deg,
+            transparent 136deg,
+            rgba(140, 100, 255, 0.5) 185deg,
+            transparent 204deg,
+            rgba(255, 120, 215, 0.6) 250deg,
+            transparent 266deg,
+            rgba(160, 110, 255, 0.5) 310deg,
+            transparent 330deg);
+    animation: ecl-spin 95s linear infinite reverse;
+}
+
+/* Chaand ke bilkul kinare ki tez chamak */
+.ecl-glow {
+    inset: 27%;
+    border-radius: 50%;
+    box-shadow:
+        0 0 6px 2px rgba(255, 250, 240, 0.95),
+        0 0 22px 6px rgba(255, 228, 200, 0.75),
+        0 0 60px 20px rgba(255, 150, 210, 0.45),
+        0 0 140px 50px rgba(200, 80, 240, 0.3),
+        0 0 260px 90px rgba(110, 60, 255, 0.2);
+    animation: ecl-flicker 6s ease-in-out infinite;
+}
+
+/* Eclipse se pehle ka suraj */
+.ecl-sun {
+    inset: 27%;
+    border-radius: 50%;
+    background: radial-gradient(circle, #fffaf0 0%, #ffe0b0 50%, #ffa266 100%);
+    box-shadow:
+        0 0 40px 12px rgba(255, 210, 150, 0.8),
+        0 0 130px 45px rgba(255, 130, 90, 0.45);
+}
+
+/* Chaand: halka sa shading aur rim light */
+.ecl-moon {
+    inset: 26.6%;
+    border-radius: 50%;
+    background: radial-gradient(circle at 38% 34%, #170d2e 0%, #08031b 55%, #030110 100%);
+    box-shadow:
+        inset 0 0 0 1px rgba(255, 228, 215, 0.3),
+        inset 12px 16px 46px rgba(255, 140, 220, 0.08),
+        0 0 2px 1px rgba(255, 245, 235, 0.6);
+}
+
+/* Diamond ring: chaand ke top-right kinare par */
+.ecl-diamond {
+    left: 66.5%;
+    top: 33.5%;
+    width: 12px;
+    height: 12px;
+    margin: -6px 0 0 -6px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow:
+        0 0 8px 3px #fff,
+        0 0 26px 10px rgba(255, 225, 190, 0.9),
+        0 0 80px 30px rgba(255, 120, 210, 0.55);
+}
+
+.ecl-diamond::before,
+.ecl-diamond::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 200px;
+    height: 1.5px;
+    border-radius: 2px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.95), transparent);
+    transform: translate(-50%, -50%) rotate(var(--r)) scaleX(1);
+    animation: ecl-flare 3.2s ease-in-out infinite;
+}
+
+.ecl-diamond::before {
+    --r: -18deg;
+}
+
+.ecl-diamond::after {
+    --r: 72deg;
+    width: 110px;
+    animation-delay: -1.6s;
+}
+
+@keyframes ecl-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes ecl-breathe {
+
+    0%,
+    100% {
+        transform: scale(1);
+        opacity: 0.85;
+    }
+
+    50% {
+        transform: scale(1.06);
+        opacity: 1;
+    }
+}
+
+@keyframes ecl-flicker {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    40% {
+        opacity: 0.82;
+    }
+
+    60% {
+        opacity: 0.95;
+    }
+}
+
+@keyframes ecl-flare {
+
+    0%,
+    100% {
+        transform: translate(-50%, -50%) rotate(var(--r)) scaleX(0.6);
+        opacity: 0.6;
+    }
+
+    50% {
+        transform: translate(-50%, -50%) rotate(var(--r)) scaleX(1.15);
+        opacity: 1;
+    }
+}
+
+/* Footer screen se bahar ho to animation rok do */
 .ft-paused .ft-star,
-.ft-paused .ft-ring {
+.ft-paused .ft-ring,
+.ft-paused .ecl-haze,
+.ft-paused .ecl-streamers,
+.ft-paused .ecl-glow,
+.ft-paused .ecl-diamond::before,
+.ft-paused .ecl-diamond::after {
     animation-play-state: paused;
 }
 
+/* ---------- Nav links ---------- */
 .ft-link {
     position: relative;
 }
