@@ -157,7 +157,7 @@ function Particles({ theme, seed }: { theme: Theme; seed: number }) {
  * Wheel / touch / keyboard ke ek gesture par agli ya pichli book tak
  * smoothly scroll karta hai. Section ke bahar normal scroll chalta hai.
  */
-function useBookSnap(sectionRef: RefObject<HTMLElement>, stickyRef: RefObject<HTMLDivElement>, reduce: boolean) {
+function useBookSnap(sectionRef: RefObject<HTMLElement | null>, stickyRef: RefObject<HTMLDivElement | null>, reduce: boolean) {
     useEffect(() => {
         const section = sectionRef.current;
         const sticky = stickyRef.current;
