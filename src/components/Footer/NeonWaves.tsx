@@ -3,7 +3,7 @@ import { useEffect, useRef } from "react";
 const CYCLE = 4.6;
 const MEET = 0.55;
 const SPARKS = 70;
-const BLEED = 240; // canvas ko upar/neeche extra jagah, taake burst cut na ho
+const BLEED = 240; 
 
 export default function NeonWaves({ className = "" }: { className?: string }) {
     const canvasRef = useRef<HTMLCanvasElement>(null);

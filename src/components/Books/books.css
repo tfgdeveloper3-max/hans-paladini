@@ -10,7 +10,6 @@
     font-family: "HoustonPen", cursive !important;
 }
 
-/* ---------- Particles ---------- */
 .bk-p {
     position: absolute;
     border-radius: 9999px;
@@ -126,7 +125,6 @@
     }
 }
 
-/* ---------- Background seam: do images ke jod par narm dark blur patti ---------- */
 .bk-seam {
     position: absolute;
     top: 0;
@@ -135,7 +133,6 @@
     width: clamp(160px, 22vw, 360px);
     pointer-events: none;
     transform: translateX(-50%);
-    /* Neeche thodi chaudi aur gehri, upar halki (reference jaisi) — bina kisi seedhi edge ke */
     background:
         radial-gradient(ellipse 50% 70% at 56% 100%, rgba(0, 0, 0, 0.55), transparent 100%),
         linear-gradient(90deg,
@@ -154,7 +151,6 @@
     will-change: opacity;
 }
 
-/* ---------- Glass container ---------- */
 .bk-glass {
     position: absolute;
     inset: 0;
@@ -170,7 +166,6 @@
     pointer-events: none;
 }
 
-/* Glass ke andar tairta hua dhuaan */
 .bk-glass__wisp {
     position: absolute;
     border-radius: 50%;
@@ -205,7 +200,6 @@
     animation: bk-smoke-c 20s ease-in-out infinite alternate;
 }
 
-/* Glass ke bahar ka narm dhuaan (halo) */
 .bk-halo {
     position: absolute;
     inset: -10% -6%;
@@ -228,7 +222,6 @@
     }
 }
 
-/* ---------- Text ke peeche smoke (glass ke andar) ---------- */
 .bk-smoke {
     position: absolute;
     inset: -14% -10%;
@@ -317,7 +310,6 @@
     }
 }
 
-/* ---------- Pause / misc ---------- */
 .bk-paused .bk-p,
 .bk-paused .bk-p>i,
 .bk-paused .bk-smoke__wisp,

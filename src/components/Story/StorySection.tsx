@@ -94,9 +94,7 @@ function StoryPanel({ story, reduce }: { story: Story; reduce: boolean }) {
             ref={ref}
             className={`relative z-10 flex h-[100svh] items-center overflow-x-clip px-[6vw] ${story.side === "right" ? "justify-end" : "justify-start"}`}
         >
-            {/* y wrapper: smoke aur content saath move karte hain */}
             <motion.div className="relative w-full max-w-[38rem] md:w-[46%]" style={{ y: reduce ? 0 : y }}>
-                {/* Smoke content ke sibling par hai, taake fade ke dauran bhi blur sahi rahe */}
                 <motion.span aria-hidden className="story-smoke" style={{ opacity: reduce ? 1 : opacity }}>
                     <span className="story-smoke__wisp story-smoke__wisp--a" />
                     <span className="story-smoke__wisp story-smoke__wisp--b" />

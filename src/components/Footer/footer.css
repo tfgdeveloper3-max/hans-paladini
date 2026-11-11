@@ -1,4 +1,3 @@
-/* ---------- Stars ---------- */
 @keyframes ft-twinkle {
 
     0%,
@@ -15,7 +14,6 @@
     animation: ft-twinkle var(--d, 3s) ease-in-out var(--delay, 0s) infinite;
 }
 
-/* ---------- Shockwave rings (eclipse se nikalte hue) ---------- */
 @keyframes ft-ring {
     0% {
         transform: translate(-50%, -50%) scale(0.6);
@@ -33,7 +31,6 @@
     will-change: transform, opacity;
 }
 
-/* ---------- Solar eclipse ---------- */
 .ecl {
     width: min(92vw, 820px);
     aspect-ratio: 1;
@@ -44,7 +41,6 @@
     position: absolute;
 }
 
-/* Bahar ki narm pink/violet roshni */
 .ecl-haze {
     inset: -28%;
     border-radius: 50%;
@@ -61,7 +57,6 @@
     inset: 0;
 }
 
-/* Corona ki kirnein: conic rays, ring shape mein mask */
 .ecl-streamers {
     position: absolute;
     border-radius: 50%;
@@ -120,7 +115,6 @@
     animation: ecl-spin 95s linear infinite reverse;
 }
 
-/* Chaand ke bilkul kinare ki tez chamak */
 .ecl-glow {
     inset: 27%;
     border-radius: 50%;
@@ -133,7 +127,6 @@
     animation: ecl-flicker 6s ease-in-out infinite;
 }
 
-/* Eclipse se pehle ka suraj */
 .ecl-sun {
     inset: 27%;
     border-radius: 50%;
@@ -143,7 +136,6 @@
         0 0 130px 45px rgba(255, 130, 90, 0.45);
 }
 
-/* Chaand: halka sa shading aur rim light */
 .ecl-moon {
     inset: 26.6%;
     border-radius: 50%;
@@ -154,7 +146,6 @@
         0 0 2px 1px rgba(255, 245, 235, 0.6);
 }
 
-/* Diamond ring: chaand ke top-right kinare par */
 .ecl-diamond {
     left: 66.5%;
     top: 33.5%;
@@ -243,7 +234,6 @@
     }
 }
 
-/* Footer screen se bahar ho to animation rok do */
 .ft-paused .ft-star,
 .ft-paused .ft-ring,
 .ft-paused .ecl-haze,
@@ -254,7 +244,6 @@
     animation-play-state: paused;
 }
 
-/* ---------- Nav links ---------- */
 .ft-link {
     position: relative;
 }

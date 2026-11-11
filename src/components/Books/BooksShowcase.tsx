@@ -60,7 +60,6 @@ const PER_BOOK = 90;
 const EXIT = 70;
 const BOOKS_SPAN = (N - 1) * PER_BOOK;
 
-/** Ek scroll par ek book: slide ka time aur easing */
 const SNAP_DURATION = 1.15;
 const SNAP_EASE = [0.65, 0, 0.35, 1] as const;
 
@@ -95,10 +94,6 @@ function seeded(seed: number) {
     };
 }
 
-/**
- * Content sirf tab dikhta hai jab slide apni jagah par ruki ho.
- * Swipe ke beech mein sirf background nazar aata hai, is liye flicker nahi hota.
- */
 const settled = (v: number) => {
     const d = Math.abs(v - Math.round(v));
     if (d < 0.06) return 1;
@@ -153,10 +148,6 @@ function Particles({ theme, seed }: { theme: Theme; seed: number }) {
     );
 }
 
-/**
- * Wheel / touch / keyboard ke ek gesture par agli ya pichli book tak
- * smoothly scroll karta hai. Section ke bahar normal scroll chalta hai.
- */
 function useBookSnap(sectionRef: RefObject<HTMLElement | null>, stickyRef: RefObject<HTMLDivElement | null>, reduce: boolean) {
     useEffect(() => {
         const section = sectionRef.current;
@@ -176,25 +167,23 @@ function useBookSnap(sectionRef: RefObject<HTMLElement | null>, stickyRef: RefOb
             return { top, step, end: top + (N - 1) * step, bottom: top + range };
         };
 
-        // Kis scroll position par jana hai; null = normal scroll chalne do
         const targetFor = (dir: number): number | null => {
             const { top, step, end, bottom } = geo();
             const y = window.scrollY;
             if (y < top - 1 || y > bottom + 1) return null;
             const rel = (y - top) / step;
             if (dir > 0) {
-                if (y >= end - 1) return null; // aakhri book ke baad section se bahar nikal jao
+                if (y >= end - 1) return null; 
                 const k = Math.min(N - 1, Math.floor(rel + 0.02) + 1);
                 return top + k * step;
             }
-            if (y <= top + 1) return null; // pehli book se upar normal scroll
-            if (y > end + 1) return end; // neeche se wapas aate hue aakhri book par ruko
+            if (y <= top + 1) return null; 
+            if (y > end + 1) return end;
             const k = Math.max(0, Math.ceil(rel - 0.02) - 1);
             return top + k * step;
         };
 
         const unlockWhenQuiet = () => {
-            // Trackpad ki inertia khatam hone tak agla gesture na pakdo
             if (performance.now() - lastWheel > 160) locked = false;
             else window.setTimeout(unlockWhenQuiet, 60);
         };
@@ -245,7 +234,6 @@ function useBookSnap(sectionRef: RefObject<HTMLElement | null>, stickyRef: RefOb
             }
         };
 
-        // Scrollbar drag ya kisi bhi wajah se slide beech mein ruk jaye to nearest book par le jao
         let idleTimer = 0;
         const onScroll = () => {
             if (locked) return;
@@ -379,10 +367,7 @@ export default function BooksShowcase() {
                     style={{ y: exitY, scale: exitScale, opacity: exitOpacity, zIndex: N + 2 }}
                 >
                     <div className="relative w-full max-w-[1180px]">
-                        {/* Bahar ka narm dhuaan, glass ke kinaron se nikalta hua */}
                         <span aria-hidden className="bk-halo" />
-
-                        {/* Glass container: hamesha jagah par rehta hai, sirf andar ka content badalta hai */}
                         <div aria-hidden className="bk-glass">
                             <span className="bk-glass__wisp bk-glass__wisp--a" />
                             <span className="bk-glass__wisp bk-glass__wisp--b" />
@@ -407,7 +392,6 @@ function Background({ src, i, pos }: { src: string; i: number; pos: MotionValue<
     const x = useTransform(pos, (v) => `${(i - v) * 100}%`);
     const innerX = useTransform(pos, (v) => `${(v - i) * 18}%`);
     const visibility = useTransform(pos, (v) => (Math.abs(i - v) < 1.02 ? "visible" : "hidden"));
-    // Seam (do images ka jod) screen ke beech mein ho to poora, kinaron par gayab
     const seamOpacity = useTransform(pos, (v) => {
         const d = i - v;
         if (d <= 0 || d >= 1) return 0;
@@ -430,7 +414,6 @@ function Background({ src, i, pos }: { src: string; i: number; pos: MotionValue<
     );
 }
 
-/** Sirf active book ka content render hota hai, sab ek hi jagah par aligned */
 function ActiveBook({ active, pos, loaded }: { active: number; pos: MotionValue<number>; loaded: Set<number> }) {
     const book = BOOKS[active] ?? BOOKS[0]!;
     const opacity = useTransform(pos, settled);
@@ -449,7 +432,6 @@ function ActiveBook({ active, pos, loaded }: { active: number; pos: MotionValue<
                 {String(active + 1).padStart(2, "0")}
             </motion.span>
 
-            {/* Text column: smoke aur text saath move karte hain */}
             <motion.div className="relative order-2 md:order-1" style={{ y: textY }}>
                 <motion.span aria-hidden className="bk-smoke" style={{ opacity }}>
                     <span className="bk-smoke__wisp bk-smoke__wisp--a" />
@@ -482,7 +464,6 @@ function ActiveBook({ active, pos, loaded }: { active: number; pos: MotionValue<
                 </motion.div>
             </motion.div>
 
-            {/* Cover column: sab covers ek hi box mein stacked, sirf active dikhta hai */}
             <div className="relative order-1 flex justify-center md:order-2">
                 <motion.div className="relative w-[clamp(160px,22vw,360px)]" style={{ opacity, y: coverY, scale: coverScale }}>
                     <div

@@ -37,7 +37,6 @@ const SOCIAL = [
 
 const EASE_OUT = [0.16, 1, 0.3, 1] as const;
 
-// Eclipse ka center: heading wale content block ke beech mein
 const ECLIPSE_TOP = "calc(clamp(6rem, 10vw, 9rem) + 10.5rem)";
 
 export default function FooterCTA() {
@@ -151,10 +150,6 @@ export default function FooterCTA() {
     );
 }
 
-/**
- * Solar eclipse: suraj dikhta hai, chaand slide ho kar usay dhak leta hai,
- * phir corona chamakta hai aur edge par "diamond ring" flash hota hai.
- */
 function Eclipse({ seen }: { seen: boolean }) {
     const reduce = useReducedMotion();
     const play = seen || !!reduce;
