@@ -10,6 +10,7 @@ import purgatoryCover from "/images/books/VampirePrincess2.png";
 import willyCover from "/images/books/Willy-Jones.png";
 import inquisitorCover from "/images/books/The-Inquisitor.png";
 import paradiseCover from "/images/books/Paradise.png";
+import { idlePreload } from "@/utils/idlePreload";
 
 type Series = "daywalker" | "willy";
 type Book = { name: string; desc: string; cover: string; href: string };
@@ -76,6 +77,8 @@ export default function ExploreBooks() {
     const bgY = useTransform(scrollYProgress, [0, 1], ["-6%", "6%"]);
 
     const books = SERIES[tab].books;
+
+    useEffect(() => idlePreload([portfolioBg, ...Object.values(SERIES).flatMap((s) => s.books.map((b) => b.cover))]), []);
 
     return (
         <section ref={ref} id="books" aria-labelledby="pf-title" className="portfolio relative isolate overflow-hidden bg-[#140b2e] py-[clamp(4rem,7vw,7rem)]">

@@ -12,6 +12,7 @@ import "./world.css";
 import worldBg from "/images/world/World-BG.png";
 import daywalkerLogo from "/images/world/Daywalker.png";
 import willyLogo from "/images/world/Willy-John-White.png";
+import { idlePreload } from "@/utils/idlePreload";
 
 const TITLE = "Explore The World Of Hans Paladini";
 const TYPE_SPEED = 55;
@@ -76,6 +77,8 @@ export default function ExploreWorld() {
     );
 
     const lit = stage === "lit";
+
+    useEffect(() => idlePreload([worldBg, daywalkerLogo, willyLogo]), []);
 
     return (
         <section

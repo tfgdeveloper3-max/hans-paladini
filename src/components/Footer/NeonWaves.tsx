@@ -72,9 +72,9 @@ export default function NeonWaves({ className = "" }: { className?: string }) {
         function draw(now: number) {
             const t = (now - start) / 1000;
             const p = reduce ? 0 : (t % CYCLE) / CYCLE;
-            const cy = h * 0.5; // bleed dono taraf barabar hai, center wahi rehta hai
+            const cy = h * 0.5; 
             const cx = w / 2;
-            const band = Math.max(1, h - BLEED * 2); // asal 160px wali patti
+            const band = Math.max(1, h - BLEED * 2); 
 
             ctx.clearRect(0, 0, w, h);
             ctx.globalCompositeOperation = "lighter";

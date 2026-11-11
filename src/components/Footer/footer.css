@@ -31,7 +31,18 @@
     will-change: transform, opacity;
 }
 
+/* ---------- Solar eclipse ---------- */
 .ecl {
+    /* Brightness controls: 0 = band, 1 = full. Inhi ko badal kar tune karein */
+    --ecl-rays: 0.45;
+    /* corona ki kirnein */
+    --ecl-glow: 0.5;
+    /* chaand ke kinare ki chamak */
+    --ecl-haze: 0.5;
+    /* bahar ki pink/violet roshni */
+    --ecl-diamond: 0.6;
+    /* diamond ring ki flare lines */
+
     width: min(92vw, 820px);
     aspect-ratio: 1;
     pointer-events: none;
@@ -50,6 +61,7 @@
             rgba(110, 50, 230, 0.12) 50%,
             transparent 72%);
     filter: blur(12px);
+    opacity: var(--ecl-haze);
     animation: ecl-breathe 9s ease-in-out infinite;
 }
 
@@ -68,6 +80,7 @@
 
 .ecl-streamers--a {
     inset: 0;
+    opacity: var(--ecl-rays);
     background: conic-gradient(from 8deg,
             transparent 0deg,
             rgba(255, 240, 225, 0.85) 7deg,
@@ -97,7 +110,7 @@
 
 .ecl-streamers--b {
     inset: 6%;
-    opacity: 0.75;
+    opacity: calc(0.75 * var(--ecl-rays));
     background: conic-gradient(from 40deg,
             transparent 0deg,
             rgba(255, 110, 220, 0.6) 12deg,
@@ -124,6 +137,7 @@
         0 0 60px 20px rgba(255, 150, 210, 0.45),
         0 0 140px 50px rgba(200, 80, 240, 0.3),
         0 0 260px 90px rgba(110, 60, 255, 0.2);
+    opacity: var(--ecl-glow);
     animation: ecl-flicker 6s ease-in-out infinite;
 }
 
@@ -132,32 +146,33 @@
     border-radius: 50%;
     background: radial-gradient(circle, #fffaf0 0%, #ffe0b0 50%, #ffa266 100%);
     box-shadow:
-        0 0 40px 12px rgba(255, 210, 150, 0.8),
-        0 0 130px 45px rgba(255, 130, 90, 0.45);
+        0 0 30px 8px rgba(255, 210, 150, 0.55),
+        0 0 100px 30px rgba(255, 130, 90, 0.3);
 }
 
+/* Chaand opaque hi rahega, taake suraj uske peeche se na jhalke */
 .ecl-moon {
     inset: 26.6%;
     border-radius: 50%;
     background: radial-gradient(circle at 38% 34%, #170d2e 0%, #08031b 55%, #030110 100%);
     box-shadow:
-        inset 0 0 0 1px rgba(255, 228, 215, 0.3),
-        inset 12px 16px 46px rgba(255, 140, 220, 0.08),
-        0 0 2px 1px rgba(255, 245, 235, 0.6);
+        inset 0 0 0 1px rgba(255, 228, 215, 0.18),
+        inset 12px 16px 46px rgba(255, 140, 220, 0.05),
+        0 0 2px 1px rgba(255, 245, 235, 0.35);
 }
 
 .ecl-diamond {
     left: 66.5%;
     top: 33.5%;
-    width: 12px;
-    height: 12px;
-    margin: -6px 0 0 -6px;
+    width: 10px;
+    height: 10px;
+    margin: -5px 0 0 -5px;
     border-radius: 50%;
-    background: #fff;
+    background: rgba(255, 255, 255, 0.85);
     box-shadow:
-        0 0 8px 3px #fff,
-        0 0 26px 10px rgba(255, 225, 190, 0.9),
-        0 0 80px 30px rgba(255, 120, 210, 0.55);
+        0 0 6px 2px rgba(255, 255, 255, 0.6),
+        0 0 20px 8px rgba(255, 225, 190, 0.45),
+        0 0 60px 22px rgba(255, 120, 210, 0.25);
 }
 
 .ecl-diamond::before,
@@ -166,7 +181,7 @@
     position: absolute;
     left: 50%;
     top: 50%;
-    width: 200px;
+    width: 170px;
     height: 1.5px;
     border-radius: 2px;
     background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.95), transparent);
@@ -180,7 +195,7 @@
 
 .ecl-diamond::after {
     --r: 72deg;
-    width: 110px;
+    width: 95px;
     animation-delay: -1.6s;
 }
 
@@ -195,12 +210,12 @@
     0%,
     100% {
         transform: scale(1);
-        opacity: 0.85;
+        opacity: calc(0.85 * var(--ecl-haze));
     }
 
     50% {
         transform: scale(1.06);
-        opacity: 1;
+        opacity: var(--ecl-haze);
     }
 }
 
@@ -208,15 +223,15 @@
 
     0%,
     100% {
-        opacity: 1;
+        opacity: var(--ecl-glow);
     }
 
     40% {
-        opacity: 0.82;
+        opacity: calc(0.82 * var(--ecl-glow));
     }
 
     60% {
-        opacity: 0.95;
+        opacity: calc(0.95 * var(--ecl-glow));
     }
 }
 
@@ -225,12 +240,12 @@
     0%,
     100% {
         transform: translate(-50%, -50%) rotate(var(--r)) scaleX(0.6);
-        opacity: 0.6;
+        opacity: calc(0.6 * var(--ecl-diamond));
     }
 
     50% {
         transform: translate(-50%, -50%) rotate(var(--r)) scaleX(1.15);
-        opacity: 1;
+        opacity: var(--ecl-diamond);
     }
 }
 
@@ -244,6 +259,7 @@
     animation-play-state: paused;
 }
 
+/* ---------- Nav links ---------- */
 .ft-link {
     position: relative;
 }
@@ -272,5 +288,10 @@
     .ft *::after {
         animation: none !important;
         transition: none !important;
+    }
+
+    .ecl-diamond::before,
+    .ecl-diamond::after {
+        opacity: var(--ecl-diamond);
     }
 }

@@ -10,6 +10,7 @@ import {
     useScroll,
     useTransform,
 } from "framer-motion";
+import { addScrollGuard, getLenis } from "../SmoothScroll";
 import "./books.css";
 
 import genesisCover from "/images/books/DayWalker-Vampire.png";
@@ -62,6 +63,8 @@ const BOOKS_SPAN = (N - 1) * PER_BOOK;
 
 const SNAP_DURATION = 1.15;
 const SNAP_EASE = [0.65, 0, 0.35, 1] as const;
+/** Same curve as SNAP_EASE (ease-in-out cubic), as a function for Lenis. */
+const snapEase = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 
 type ThemeCfg = {
     count: number;
@@ -156,40 +159,64 @@ function useBookSnap(sectionRef: RefObject<HTMLElement | null>, stickyRef: RefOb
 
         let anim: ReturnType<typeof animate> | null = null;
         let locked = false;
-        let lastWheel = 0;
+        let lastInput = 0;
         let touchStartY = 0;
         let touchHandled = false;
+        let idleTimer = 0;
 
-        const geo = () => {
+        let g = { top: 0, step: 1, end: 0, bottom: 0 };
+        const measure = () => {
             const top = section.getBoundingClientRect().top + window.scrollY;
             const range = section.offsetHeight - sticky.offsetHeight;
             const step = (range * PER_BOOK) / (BOOKS_SPAN + EXIT);
-            return { top, step, end: top + (N - 1) * step, bottom: top + range };
+            g = { top, step, end: top + (N - 1) * step, bottom: top + range };
         };
+        measure();
+        const ro = new ResizeObserver(measure);
+        ro.observe(document.body);
+        window.addEventListener("resize", measure);
 
         const targetFor = (dir: number): number | null => {
-            const { top, step, end, bottom } = geo();
+            const { top, step, end, bottom } = g;
             const y = window.scrollY;
             if (y < top - 1 || y > bottom + 1) return null;
             const rel = (y - top) / step;
             if (dir > 0) {
-                if (y >= end - 1) return null; 
+                if (y >= end - 1) return null;
                 const k = Math.min(N - 1, Math.floor(rel + 0.02) + 1);
                 return top + k * step;
             }
-            if (y <= top + 1) return null; 
+            if (y <= top + 1) return null;
             if (y > end + 1) return end;
             const k = Math.max(0, Math.ceil(rel - 0.02) - 1);
             return top + k * step;
         };
 
+        // Smooth-scroll momentum from the section above/below would otherwise
+        // overshoot into the middle of the books. Catch it at the first/last book.
+        const catchEntry = (dir: number, deltaY: number): number | null => {
+            const lenis = getLenis();
+            if (!lenis) return null;
+            const y = window.scrollY;
+            const next = lenis.targetScroll + deltaY;
+            if (dir > 0 && y < g.top - 1 && next > g.top + 1) return g.top;
+            if (dir < 0 && y > g.bottom + 1 && next < g.end - 1) return g.end;
+            return null;
+        };
+
         const unlockWhenQuiet = () => {
-            if (performance.now() - lastWheel > 160) locked = false;
+            if (performance.now() - lastInput > 160) locked = false;
             else window.setTimeout(unlockWhenQuiet, 60);
         };
 
         const go = (to: number) => {
             locked = true;
+            window.clearTimeout(idleTimer);
+            const lenis = getLenis();
+            if (lenis) {
+                lenis.scrollTo(to, { duration: SNAP_DURATION, easing: snapEase, lock: true, force: true, onComplete: unlockWhenQuiet });
+                return;
+            }
             anim?.stop();
             anim = animate(window.scrollY, to, {
                 duration: reduce ? 0 : SNAP_DURATION,
@@ -199,18 +226,30 @@ function useBookSnap(sectionRef: RefObject<HTMLElement | null>, stickyRef: RefOb
             });
         };
 
-        const onWheel = (e: WheelEvent) => {
-            lastWheel = performance.now();
-            if (e.ctrlKey) return; // pinch zoom
+        /** Returns true when the event was used for a snap (and must not scroll normally). */
+        const handleWheel = (deltaY: number, e: WheelEvent): boolean => {
+            lastInput = performance.now();
+            if (e.ctrlKey) return false; // pinch zoom
             if (locked) {
                 e.preventDefault();
-                return;
+                return true;
             }
-            if (Math.abs(e.deltaY) < 2) return;
-            const t = targetFor(Math.sign(e.deltaY));
-            if (t === null) return;
+            if (Math.abs(deltaY) < 2) return false;
+            const dir = Math.sign(deltaY);
+            const t = targetFor(dir) ?? catchEntry(dir, deltaY);
+            if (t === null) return false;
             e.preventDefault();
             go(t);
+            return true;
+        };
+
+        // With Lenis: decide BEFORE Lenis scrolls
+        const removeGuard = addScrollGuard((data) => (data.event.type === "wheel" ? !handleWheel(data.deltaY, data.event as WheelEvent) : true));
+
+        // Without Lenis (reduced motion): plain wheel listener
+        const onWheel = (e: WheelEvent) => {
+            if (getLenis()) return;
+            handleWheel(e.deltaY, e);
         };
 
         const onTouchStart = (e: TouchEvent) => {
@@ -219,6 +258,7 @@ function useBookSnap(sectionRef: RefObject<HTMLElement | null>, stickyRef: RefOb
         };
 
         const onTouchMove = (e: TouchEvent) => {
+            lastInput = performance.now();
             if (locked) {
                 e.preventDefault();
                 return;
@@ -234,18 +274,17 @@ function useBookSnap(sectionRef: RefObject<HTMLElement | null>, stickyRef: RefOb
             }
         };
 
-        let idleTimer = 0;
         const onScroll = () => {
             if (locked) return;
             window.clearTimeout(idleTimer);
             idleTimer = window.setTimeout(() => {
-                if (locked) return;
-                const { top, step, end } = geo();
+                if (locked || getLenis()?.isScrolling) return;
+                const { top, step, end } = g;
                 const y = window.scrollY;
                 if (y <= top + 1 || y >= end - 1) return;
                 const t = top + Math.round((y - top) / step) * step;
                 if (Math.abs(t - y) > 2) go(t);
-            }, 140);
+            }, 160);
         };
 
         const onKey = (e: KeyboardEvent) => {
@@ -270,7 +309,10 @@ function useBookSnap(sectionRef: RefObject<HTMLElement | null>, stickyRef: RefOb
         window.addEventListener("scroll", onScroll, { passive: true });
         return () => {
             anim?.stop();
+            removeGuard();
+            ro.disconnect();
             window.clearTimeout(idleTimer);
+            window.removeEventListener("resize", measure);
             window.removeEventListener("scroll", onScroll);
             window.removeEventListener("wheel", onWheel);
             window.removeEventListener("touchstart", onTouchStart);
@@ -298,10 +340,15 @@ export default function BooksShowcase() {
     const fadeOpacity = useTransform(exit, [0, 1], [0, 1]);
 
     const [active, setActive] = useState(0);
+    const activeRef = useRef(0);
     const [loaded, setLoaded] = useState<Set<number>>(() => new Set([0, 1]));
+
+    // Runs every scroll frame: only touch React state when the active book really changes
     useMotionValueEvent(pos, "change", (v) => {
         const a = Math.min(N - 1, Math.max(0, Math.round(v)));
-        setActive((prev) => (prev === a ? prev : a));
+        if (a === activeRef.current) return;
+        activeRef.current = a;
+        setActive(a);
         setLoaded((prev) => {
             if ([a - 1, a, a + 1].every((n) => n < 0 || n >= N || prev.has(n))) return prev;
             const next = new Set(prev);
@@ -354,7 +401,7 @@ export default function BooksShowcase() {
                     }}
                 />
 
-                {!reduce && (
+                {!reduce && onScreen && (
                     <div className="pointer-events-none absolute inset-0" style={{ zIndex: N + 1 }}>
                         <AnimatePresence>
                             <Particles key={active} theme={BOOKS[active]?.theme ?? "embers"} seed={active} />
@@ -399,13 +446,13 @@ function Background({ src, i, pos }: { src: string; i: number; pos: MotionValue<
     });
 
     return (
-        <motion.div aria-hidden className="absolute inset-0" style={{ x, visibility, zIndex: i }}>
+        <motion.div aria-hidden className="absolute inset-0 will-change-transform" style={{ x, visibility, zIndex: i }}>
             <div className="absolute inset-0 overflow-hidden">
                 <motion.img
                     src={src}
                     alt=""
                     decoding="async"
-                    className="absolute inset-y-0 left-[-12%] h-full w-[124%] max-w-none object-cover"
+                    className="absolute inset-y-0 left-[-12%] h-full w-[124%] max-w-none object-cover will-change-transform"
                     style={{ x: innerX }}
                 />
             </div>
@@ -465,7 +512,7 @@ function ActiveBook({ active, pos, loaded }: { active: number; pos: MotionValue<
             </motion.div>
 
             <div className="relative order-1 flex justify-center md:order-2">
-                <motion.div className="relative w-[clamp(160px,22vw,360px)]" style={{ opacity, y: coverY, scale: coverScale }}>
+                <motion.div className="relative w-[clamp(160px,22vw,360px)] will-change-transform" style={{ opacity, y: coverY, scale: coverScale }}>
                     <div
                         aria-hidden
                         className="absolute -inset-[18%] -z-10 transition-[background] duration-500"

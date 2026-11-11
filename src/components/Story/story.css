@@ -4,26 +4,28 @@
     -webkit-user-drag: none;
 }
 
+/* Dark smoke behind the text.
+   No backdrop-filter and no filter: blur() anymore – both repaint on every
+   scroll frame. Soft radial gradients give the same look for free. */
 .story-smoke {
     position: absolute;
     inset: -22% -18%;
     pointer-events: none;
     background: radial-gradient(ellipse closest-side,
-            rgba(0, 0, 0, 0.62) 0%,
-            rgba(0, 0, 0, 0.45) 40%,
-            rgba(0, 0, 0, 0.18) 70%,
+            rgba(0, 0, 0, 0.72) 0%,
+            rgba(0, 0, 0, 0.52) 40%,
+            rgba(0, 0, 0, 0.22) 70%,
             transparent 100%);
-    -webkit-backdrop-filter: blur(6px);
-    backdrop-filter: blur(6px);
-    -webkit-mask-image: radial-gradient(ellipse closest-side, #000 30%, rgba(0, 0, 0, 0.6) 60%, transparent 100%);
-    mask-image: radial-gradient(ellipse closest-side, #000 30%, rgba(0, 0, 0, 0.6) 60%, transparent 100%);
 }
 
 .story-smoke__wisp {
     position: absolute;
     border-radius: 50%;
-    background: radial-gradient(closest-side, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.25) 55%, transparent 100%);
-    filter: blur(28px);
+    background: radial-gradient(closest-side,
+            rgba(0, 0, 0, 0.5) 0%,
+            rgba(0, 0, 0, 0.24) 50%,
+            rgba(0, 0, 0, 0.07) 78%,
+            transparent 100%);
     will-change: transform;
 }
 
@@ -49,6 +51,12 @@
     left: 22%;
     bottom: 8%;
     animation: smoke-drift-c 18s ease-in-out infinite alternate;
+}
+
+/* Smoke only moves for the panel that is on screen */
+.story-panel:not(.is-on) .story-smoke__wisp,
+.story-paused .story-smoke__wisp {
+    animation-play-state: paused;
 }
 
 @keyframes smoke-drift-a {
@@ -83,13 +91,7 @@
 
 .story-content h3,
 .story-content p {
-    text-shadow: 0 2px 20px rgba(0, 0, 0, 0.55);
-}
-
-@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-    .story-smoke {
-        background: radial-gradient(ellipse closest-side, rgba(0, 0, 0, 0.75) 0%, rgba(0, 0, 0, 0.5) 45%, transparent 100%);
-    }
+    text-shadow: 0 2px 16px rgba(0, 0, 0, 0.55);
 }
 
 @media (max-width: 767px) {

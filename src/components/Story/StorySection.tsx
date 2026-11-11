@@ -1,5 +1,6 @@
-import { useRef } from "react";
-import { motion, useReducedMotion, useScroll, useTransform, type MotionValue } from "framer-motion";
+import { useEffect, useRef } from "react";
+import { motion, useInView, useReducedMotion, useScroll, useTransform, type MotionValue } from "framer-motion";
+import { idlePreload } from "../../utils/idlePreload";
 import "./story.css";
 
 type Story = {
@@ -27,18 +28,27 @@ const EASE_OUT = [0.16, 1, 0.3, 1] as const;
 export default function StorySection() {
     const ref = useRef<HTMLElement>(null);
     const reduce = useReducedMotion() ?? false;
+    const onScreen = useInView(ref, { amount: 0 });
 
     const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end end"] });
     const pos = useTransform(scrollYProgress, (v) => v * (N - 1));
 
+    useEffect(() => idlePreload(STORIES.map((s) => s.bg)), []);
+
     return (
-        <section ref={ref} id="stories" aria-label="Stories" className="story relative bg-black" style={{ height: `${N * 100}svh` }}>
-            <div aria-hidden className="sticky top-0 h-[100svh] overflow-hidden">
+        <section
+            ref={ref}
+            id="stories"
+            aria-label="Stories"
+            className={`story relative bg-black ${onScreen ? "" : "story-paused"}`}
+            style={{ height: `${N * 100}svh` }}
+        >
+            <div aria-hidden className="sticky top-0 h-[100svh] overflow-hidden [contain:paint]">
                 {STORIES.map((s, i) => (
                     <Background key={i} story={s} i={i} pos={pos} reduce={reduce} />
                 ))}
-                <div className="absolute inset-x-0 top-0 h-[18%] bg-gradient-to-b from-black to-transparent" />
-                <div className="absolute inset-x-0 bottom-0 h-[18%] bg-gradient-to-t from-black to-transparent" />
+                <div className="absolute inset-x-0 top-0 h-[18%] bg-gradient-to-b from-black to-transparent" style={{ zIndex: N }} />
+                <div className="absolute inset-x-0 bottom-0 h-[18%] bg-gradient-to-t from-black to-transparent" style={{ zIndex: N }} />
             </div>
 
             <div className="relative -mt-[100svh]">
@@ -56,12 +66,13 @@ function Background({ story, i, pos, reduce }: { story: Story; i: number; pos: M
     const scale = useTransform(pos, [i - 0.65, i + 0.5], [1.08, 1]);
 
     return (
-        <motion.div className="absolute inset-0" style={{ opacity, visibility, zIndex: i }}>
+        <motion.div className="absolute inset-0 will-change-[opacity]" style={{ opacity, visibility, zIndex: i }}>
             <motion.img
                 src={story.bg}
                 alt=""
                 decoding="async"
-                loading={i === 0 ? "eager" : "lazy"}
+                loading={i < 2 ? "eager" : "lazy"}
+                draggable={false}
                 className="h-full w-full object-cover will-change-transform"
                 style={{ scale: reduce ? 1 : scale }}
             />
@@ -80,6 +91,7 @@ function Background({ story, i, pos, reduce }: { story: Story; i: number; pos: M
 
 function StoryPanel({ story, reduce }: { story: Story; reduce: boolean }) {
     const ref = useRef<HTMLElement>(null);
+    const onScreen = useInView(ref, { amount: 0 });
     const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
     const opacity = useTransform(scrollYProgress, [0.15, 0.4, 0.6, 0.85], [0, 1, 1, 0]);
     const y = useTransform(scrollYProgress, [0, 1], [60, -60]);
@@ -92,22 +104,21 @@ function StoryPanel({ story, reduce }: { story: Story; reduce: boolean }) {
     return (
         <article
             ref={ref}
-            className={`relative z-10 flex h-[100svh] items-center overflow-x-clip px-[6vw] ${story.side === "right" ? "justify-end" : "justify-start"}`}
+            className={`story-panel relative z-10 flex h-[100svh] items-center overflow-x-clip px-[6vw] ${story.side === "right" ? "justify-end" : "justify-start"} ${onScreen ? "is-on" : ""
+                }`}
         >
-            <motion.div className="relative w-full max-w-[38rem] md:w-[46%]" style={{ y: reduce ? 0 : y }}>
-                <motion.span aria-hidden className="story-smoke" style={{ opacity: reduce ? 1 : opacity }}>
+            {/* ONE layer moves + fades (smoke and text together), instead of two separate fading layers */}
+            <motion.div
+                className="relative w-full max-w-[38rem] will-change-[transform,opacity] md:w-[46%]"
+                style={{ y: reduce ? 0 : y, opacity: reduce ? 1 : opacity }}
+            >
+                <span aria-hidden className="story-smoke">
                     <span className="story-smoke__wisp story-smoke__wisp--a" />
                     <span className="story-smoke__wisp story-smoke__wisp--b" />
                     <span className="story-smoke__wisp story-smoke__wisp--c" />
-                </motion.span>
+                </span>
 
-                <motion.div
-                    className="story-content relative"
-                    style={{ opacity: reduce ? 1 : opacity }}
-                    initial="hide"
-                    whileInView="show"
-                    viewport={{ once: true, amount: 0.5 }}
-                >
+                <motion.div className="story-content relative" initial="hide" whileInView="show" viewport={{ once: true, amount: 0.5 }}>
                     <motion.h3
                         custom={0}
                         variants={item}

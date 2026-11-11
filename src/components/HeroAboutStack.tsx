@@ -3,10 +3,11 @@ import { motion, useMotionValueEvent, useReducedMotion, useScroll, useTransform 
 import Hero from "./Hero/Hero";
 import AboutAuthor from "./About/AboutAuthor";
 
-const HERO_H = "max(100svh, 63.54vw, 680px)"; 
+const HERO_H = "max(100svh, 600px)";
 
 export default function HeroAboutStack() {
     const aboutRef = useRef<HTMLDivElement>(null);
+    const coveredRef = useRef(false);
     const reduce = useReducedMotion() ?? false;
     const [covered, setCovered] = useState(false);
 
@@ -16,16 +17,21 @@ export default function HeroAboutStack() {
 
     useMotionValueEvent(scrollYProgress, "change", (v) => {
         const isCovered = v >= 0.999;
-        setCovered((c) => (c === isCovered ? c : isCovered));
+        if (isCovered === coveredRef.current) return;
+        coveredRef.current = isCovered;
+        setCovered(isCovered);
     });
 
     return (
         <div className="relative">
-            <div className="sticky z-0" style={{ top: `min(0px, calc(100svh - ${HERO_H}))`, visibility: covered ? "hidden" : "visible" }}>
-                <motion.div style={{ y: reduce ? 0 : heroY }}>
+            <div
+                className="sticky z-0"
+                style={{ top: `min(0px, calc(100svh - ${HERO_H}))`, visibility: covered ? "hidden" : "visible" }}
+            >
+                <motion.div className="will-change-transform" style={{ y: reduce ? 0 : heroY }}>
                     <Hero />
                 </motion.div>
-                <motion.div aria-hidden className="pointer-events-none absolute inset-0 bg-black" style={{ opacity: dim }} />
+                <motion.div aria-hidden className="pointer-events-none absolute inset-0 bg-black will-change-[opacity]" style={{ opacity: dim }} />
             </div>
 
             <div ref={aboutRef} className="relative z-10">
